@@ -1,21 +1,20 @@
 {
   "bot": "Rex (Roblox)",
-  "last_updated": "2026-03-16T21:45:00-05:00",
-  "updated_at": "2026-03-16T21:45:00-05:00",
+  "last_updated": "2026-04-06T00:15:00-05:00",
+  "updated_at": "2026-04-06T00:15:00-05:00",
   "status": "healthy",
-  "summary": "Epic session: 60+ fixes, mobile buttons, balance, team scoreboard, v0.2.1",
+  "summary": "Map vote system + desert map + portal redesign + gem popups added",
   "urgent": [],
   "needs_james": [
-    "Publish v0.2.1 from Studio",
-    "Create Speed Demon (99 R$) and Extra Lives (199 R$) game passes",
-    "Create Building Upgrade Developer Product (99 R$) for tier 5 upgrades"
+    "Add more desert enemy models from Toolbox (soldier, archer, bomber)",
+    "Publish latest build from Studio"
   ],
   "metrics": {
-    "features_completed": 74,
-    "bugs_fixed": 60,
-    "game_version": "0.2.1-beta",
+    "features_completed": 83,
+    "bugs_fixed": 65,
+    "game_version": "0.2.2-beta",
     "game_status": "PUBLIC",
     "monetization_passes": 5
   },
-  "next_run_needed": "2026-03-17"
+  "next_run_needed": "2026-04-07"
 }
