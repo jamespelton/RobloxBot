@@ -1,23 +1,20 @@
 {
   "bot": "Rex (Roblox)",
-  "last_updated": "2026-04-11T00:00:00-05:00",
-  "updated_at": "2026-04-11T00:00:00-05:00",
+  "last_updated": "2026-04-11T18:00:00-05:00",
+  "updated_at": "2026-04-11T18:00:00-05:00",
   "status": "healthy",
-  "summary": "Visual overhaul + ready-portal rework done; arena needs repair before publish (Rex deleted ~230 parts by accident)",
-  "urgent": [
-    "Arena is in broken state — Rex ran a too-broad tree cleanup and deleted ~230 non-tree parts (rocks, merlons, banners, etc). James is repairing manually before publishing."
-  ],
+  "summary": "Home menu w/ live arena background, spectate mode, gem shop wired up, day/night fixed to daytime",
+  "urgent": [],
   "needs_james": [
-    "Repair arena in Studio (Ctrl+Z or manually restore deleted decor)",
-    "After repair: File > Publish to Roblox so Hayden gets the fixed build",
+    "When ready, File > Publish to Roblox so Hayden can pull the latest build on his PC",
     "Hayden needs Node.js installed on his Windows PC before Claude Code will work",
     "Hayden needs MCPPlugin.rbxmx installed in his Studio (Windows: %LOCALAPPDATA%\\Roblox\\Plugins\\)",
     "Hayden needs to open Crystal Siege via Team Create so he loads the same place"
   ],
   "metrics": {
-    "features_completed": 83,
-    "bugs_fixed": 65,
-    "game_version": "0.2.3-beta",
+    "features_completed": 88,
+    "bugs_fixed": 72,
+    "game_version": "0.2.4-beta",
     "game_status": "PUBLIC",
     "monetization_passes": 5
   },
