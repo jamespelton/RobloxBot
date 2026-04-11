@@ -1,20 +1,24 @@
 {
   "bot": "Rex (Roblox)",
-  "last_updated": "2026-04-06T00:15:00-05:00",
-  "updated_at": "2026-04-06T00:15:00-05:00",
+  "last_updated": "2026-04-11T00:00:00-05:00",
+  "updated_at": "2026-04-11T00:00:00-05:00",
   "status": "healthy",
-  "summary": "Map vote system + desert map + portal redesign + gem popups added",
-  "urgent": [],
+  "summary": "Major visual overhaul + lobby size picker + one-time map vote — needs Studio Publish for Hayden",
+  "urgent": [
+    "PUBLISH LATEST BUILD FROM STUDIO so Hayden can see all the visual changes on his PC"
+  ],
   "needs_james": [
-    "Add more desert enemy models from Toolbox (soldier, archer, bomber)",
-    "Publish latest build from Studio"
+    "File > Publish to Roblox in Studio to save tonight's session",
+    "Hayden needs Node.js installed on his Windows PC before Claude Code will work",
+    "Hayden needs MCPPlugin.rbxmx installed in his Studio (~/Documents/Roblox/Plugins/)",
+    "Hayden needs to open Crystal Siege via Team Create so he loads the same place"
   ],
   "metrics": {
     "features_completed": 83,
     "bugs_fixed": 65,
-    "game_version": "0.2.2-beta",
+    "game_version": "0.2.3-beta",
     "game_status": "PUBLIC",
     "monetization_passes": 5
   },
-  "next_run_needed": "2026-04-07"
+  "next_run_needed": "2026-04-12"
 }

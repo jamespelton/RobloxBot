@@ -1,2 +1,5 @@
 # Claude session transcripts
 .claude/transcript-backups/
+
+# macOS
+.DS_Store
