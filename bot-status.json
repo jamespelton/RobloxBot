@@ -1,22 +1,19 @@
 {
   "bot": "Rex (Roblox)",
-  "last_updated": "2026-04-11T18:00:00-05:00",
-  "updated_at": "2026-04-11T18:00:00-05:00",
+  "last_updated": "2026-04-28T00:00:00-05:00",
+  "updated_at": "2026-04-28T00:00:00-05:00",
   "status": "healthy",
-  "summary": "Home menu w/ live arena background, spectate mode, gem shop wired up, day/night fixed to daytime",
+  "summary": "Crystal Siege: rebuilt DesertTree with dead-tree mesh; flagged duplicate Lobby root bug blocking desert tree swap",
   "urgent": [],
   "needs_james": [
-    "When ready, File > Publish to Roblox so Hayden can pull the latest build on his PC",
-    "Hayden needs Node.js installed on his Windows PC before Claude Code will work",
-    "Hayden needs MCPPlugin.rbxmx installed in his Studio (Windows: %LOCALAPPDATA%\\Roblox\\Plugins\\)",
-    "Hayden needs to open Crystal Siege via Team Create so he loads the same place"
+    "Decide: delete empty duplicate workspace.Lobby, or have Rex patch ReadyUpManager to iterate all Lobby instances",
+    "Two Lobby models exist at workspace level — Lobby[1] empty, Lobby[2] holds the 398 LobbyTrees.NewTrees; FindFirstChild grabs the empty one so desert reskin/tree-swap never runs against the populated lobby"
   ],
   "metrics": {
-    "features_completed": 88,
-    "bugs_fixed": 72,
-    "game_version": "0.2.4-beta",
-    "game_status": "PUBLIC",
-    "monetization_passes": 5
+    "scripts_modified": 0,
+    "studio_changes": 1,
+    "game": "Crystal Siege",
+    "game_status": "in-development"
   },
-  "next_run_needed": "2026-04-12"
+  "next_run_needed": "2026-04-29"
 }
