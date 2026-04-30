@@ -1,19 +1,28 @@
 {
   "bot": "Rex (Roblox)",
-  "last_updated": "2026-04-28T00:00:00-05:00",
-  "updated_at": "2026-04-28T00:00:00-05:00",
+  "last_updated": "2026-04-29T00:00:00-05:00",
+  "updated_at": "2026-04-29T00:00:00-05:00",
   "status": "healthy",
-  "summary": "Crystal Siege: rebuilt DesertTree with dead-tree mesh; flagged duplicate Lobby root bug blocking desert tree swap",
+  "summary": "Vehicle Tycoon: shuffle-bag spawns, admin Buffs panel (Lucky/CoinRush/InstantCollect/Fly/Speed), new Rare Boat (1500c, 40/s)",
   "urgent": [],
   "needs_james": [
-    "Decide: delete empty duplicate workspace.Lobby, or have Rex patch ReadyUpManager to iterate all Lobby instances",
-    "Two Lobby models exist at workspace level — Lobby[1] empty, Lobby[2] holds the 398 LobbyTrees.NewTrees; FindFirstChild grabs the empty one so desert reskin/tree-swap never runs against the populated lobby"
+    "Playtest Rare Boat — if it drives sideways/backwards on the road, tell Rex which way it faces and we'll set facingOffset (currently CFrame.new())",
+    "CLAUDE.md is stale: still describes Crystal Siege as 'Current Game', but the Studio file is now a vehicle tycoon (BikeShopServer, VehicleTypes, base/stand pedestals). Worth updating before next session so context is accurate."
   ],
   "metrics": {
-    "scripts_modified": 0,
-    "studio_changes": 1,
-    "game": "Crystal Siege",
+    "scripts_modified": 4,
+    "studio_changes": 7,
+    "game": "Vehicle Tycoon (Bike Shop)",
     "game_status": "in-development"
   },
-  "next_run_needed": "2026-04-29"
+  "session_changes": [
+    "BikeShopServer: replaced weighted-random pickVehicleType with a shuffle bag (per James — felt streaky); added parallel luckBag using LUCK_WEIGHTS (10/30/30/30) when _G.LuckActive",
+    "BikeShopServer: coin generation loop now multiplies rate by _G.CoinMultiplier; added _G.AdminInstantCollect entrypoint",
+    "AdminManager: handlers for SetLuck (token-guarded duration), SetCoinRush (multiplier+duration), InstantCollect",
+    "AdminPanelUI: scroll panel; new Buffs section (Lucky 60s/3min, Coin Rush 5x/25x, Instant Collect); new Self section (Super Speed 80, Fly with WASD/Space/Ctrl); buffs persist across respawn",
+    "VehicleTypes: added RareBoat (cost 1500, 40 coins/s, weight 20, teal rgb(50,180,200))",
+    "ReplicatedStorage.AdminEvents: added SetLuck, SetCoinRush, InstantCollect RemoteEvents",
+    "Workspace.Boat Model → ServerStorage.BoatTemplate; PrimaryPart set to BaseBarca"
+  ],
+  "next_run_needed": "2026-04-30"
 }
