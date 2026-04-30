@@ -7,7 +7,7 @@
   "urgent": [],
   "needs_james": [
     "Playtest Rare Boat — if it drives sideways/backwards on the road, tell Rex which way it faces and we'll set facingOffset (currently CFrame.new())",
-    "CLAUDE.md is stale: still describes Crystal Siege as 'Current Game', but the Studio file is now a vehicle tycoon (BikeShopServer, VehicleTypes, base/stand pedestals). Worth updating before next session so context is accurate."
+    "CLAUDE.md only describes Crystal Siege but Rex now also maintains the Vehicle Tycoon. Consider splitting CLAUDE.md into two game sections so future sessions have context for both."
   ],
   "metrics": {
     "scripts_modified": 4,
