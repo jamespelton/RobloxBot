@@ -1,0 +1,12 @@
+TikTok pinned-video cover image, 9:16 vertical (1080x1920), bold and scroll-stopping.
+
+LAYOUT (top to bottom):
+TOP THIRD: Roblox blocky-style character (Hayden's avatar — brown spiked hair, black pixelated shutter shades, grey-and-black plaid flannel, gold chain w/ green gem pendant, light blue jeans, white sneakers) in a heroic determined pose, holding a glowing crystal sword raised over the shoulder.
+
+MIDDLE THIRD: HUGE bold text "DEFEND THE CRYSTAL!" in yellow (#FFD700) with thick black outline and hot-pink glow drop-shadow. Below it in smaller white-with-black-outline text: "NEW ROBLOX TD".
+
+BOTTOM THIRD: A massive hot-pink crystal cluster glowing intensely, with multi-spire formation. Hot-pink energy beams radiating outward. Dark stormy sky with cyan lightning bolts in the background.
+
+OVERALL: Vertical composition optimized for mobile TikTok scroll. The character is the immediate hook, text is unmissable, crystal is the genre signal. Vibrant, cel-shaded, mobile-game-icon style like Tower Defense Simulator or Doors. Saturated colors, high contrast. No watermarks, no UI elements, no extra text other than what's specified above. Image fills the entire frame edge-to-edge.
+
+SAFE ZONE NOTE: TikTok overlays UI on the bottom 20% (description, buttons) and right 15% (like/comment/share). Keep the most important visuals (character + main text) in the top 65% of the frame.
