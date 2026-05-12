@@ -1,0 +1,9 @@
+Roblox game icon, 1:1 square composition, vibrant high-contrast colors.
+
+CHARACTER (matches the attached reference exactly): Roblox blocky-style avatar — brown spiked hair, black pixelated "deal with it" shutter shades, grey-and-black plaid flannel shirt, gold chain necklace with a glowing green gem pendant, light blue jeans, white sneakers. The character is in a HEROIC determined pose — sword raised over the shoulder, ready to swing. Face-forward, taking up roughly 55-60% of the frame, positioned slightly left of center.
+
+WEAPON: A massive glowing crystal sword in his right hand — hot-pink (#FF2D95) glowing crystal blade with cyan highlights, energy sparks coming off it.
+
+BACKGROUND: A colossal hot-pink crystal cluster (multiple jagged spires) glowing intensely behind the character, fills the right side of the frame. Pink and magenta energy beams radiate outward. Dark stormy sky with a couple of cyan lightning bolts. Dramatic backlight rim-lights the character.
+
+STYLE: Mobile game icon style, like Roblox Tower Defense Simulator or All Star Tower Defense — bold, saturated, readable at 150x150 pixels. Bright cel-shaded look. No text. No watermarks. No UI elements. Square composition (1:1). The image should fill the entire frame edge-to-edge with no borders or padding.

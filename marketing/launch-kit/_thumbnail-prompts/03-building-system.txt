@@ -1,0 +1,16 @@
+Roblox game thumbnail, 16:9 widescreen, 1280x720.
+
+SCENE: A Roblox blocky-style player character in builder gear (yellow hard hat, brown apron, wrench in hand) is mid-construction, building a defense base. The player is to the left side of the image, placing a turret with a glowing ghost-preview outline.
+
+DEFENSES VISIBLE (filling the right side of the image):
+- Stone walls connecting in a defensive perimeter
+- A metal cannon tower with a glowing pink crystal core
+- A turret with rotating barrels
+- A spike trap on the ground
+- A healing station with a green glowing dome
+
+ENVIRONMENT: Grass arena floor with a faint blue grid overlay (showing build placement), hot-pink crystal cluster visible in the background as the objective being protected.
+
+TEXT OVERLAY: Top-right corner — "BUILD YOUR BASE!" in HUGE bold orange text with thick black outline and a slight yellow glow drop-shadow. All caps, chunky game-icon font.
+
+STYLE: Mobile game thumbnail style, like Roblox Tower Defense Simulator's building screens. Vibrant, cel-shaded, bold colors. The image should fill the entire frame edge-to-edge with no borders or padding. No watermarks. No extra text other than "BUILD YOUR BASE!".

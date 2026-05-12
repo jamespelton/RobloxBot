@@ -1,0 +1,13 @@
+Roblox game thumbnail, 16:9 widescreen, 1280x720.
+
+LAYOUT: A bold promotional card design announcing a free promo code reward.
+
+CENTER OF FRAME: A large ornate scroll or banner unrolled across the middle of the image. On the scroll, in HUGE bold typewriter-style text with a slight magical glow: "CODE: CRYSTALSIEGE". The text is in white with thick black outline and a hot-pink glow drop-shadow. The scroll has gold trim and small crystal gem decorations.
+
+BELOW THE SCROLL: A burst of magenta and purple GEMS pouring out of the bottom of the scroll, animated mid-fall. Gem icons in a bunch of sizes and rotations.
+
+ABOVE THE SCROLL: Big yellow text reading "FREE GEMS!" in chunky bold game-icon font with thick black outline and yellow glow.
+
+BACKGROUND: Dark purple-to-magenta gradient with sparkles, stars, and magical particles. A faint glowing hot-pink crystal silhouette in the background corners.
+
+STYLE: Mobile game thumbnail style, like the "use this code!" announcement screens in Roblox games. Bold, magical, eye-catching, very readable. The image should fill the entire frame edge-to-edge with no borders or padding. No watermarks. No extra text other than "FREE GEMS!" and "CODE: CRYSTALSIEGE".

@@ -1,0 +1,17 @@
+Roblox game thumbnail, 16:9 widescreen, 1280x720.
+
+LAYOUT: A three-step visual progression showing the same crystal getting more powerful, left to right.
+
+LEFT (small crystal): A modest pink crystal cluster, maybe 5 spires, calm steady glow. Labeled below it: "LEVEL 1".
+
+MIDDLE (medium crystal): The same crystal but bigger, more spires, brighter pink with magenta highlights, magical particles floating around. Labeled below it: "LEVEL 5".
+
+RIGHT (epic crystal): A HUGE crystal cluster — 15+ spires, intense hot-pink glow with energy beams shooting upward into the sky, rainbow aura around it, lightning crackling, and a beam of light shooting straight up into the heavens. Labeled below it: "LEVEL 10".
+
+ARROWS: Between each crystal, a glowing yellow arrow ("→") indicating progression.
+
+ENVIRONMENT: Dark stone arena floor for all three. The background gets more dramatic left to right — calm sky on the left, stormy sky with lightning on the right.
+
+TEXT OVERLAY: Top of the image — "UPGRADE THE CRYSTAL!" in HUGE bold yellow text with thick black outline and a hot-pink glow drop-shadow. All caps, chunky game-icon font, very readable.
+
+STYLE: Mobile game thumbnail style. Bold, saturated colors, cel-shaded. The image should fill the entire frame edge-to-edge with no borders or padding. No watermarks. No extra text other than "UPGRADE THE CRYSTAL!" and the level labels and arrows.

@@ -1,0 +1,19 @@
+Roblox game thumbnail, 16:9 widescreen, 1280x720.
+
+SCENE: A team of 4 Roblox blocky-style player characters fighting back-to-back in a circle formation, defending a hot-pink crystal in the center. They are SURROUNDED by waves of dark zombie and skeleton enemies attacking from all sides.
+
+PLAYERS (each different class):
+1. Front-facing: a Fighter with a crystal sword, mid-swing
+2. Right-facing: a Mage casting cyan lightning at a zombie
+3. Left-facing: a Shooter firing a crystal bow
+4. Back-facing (slightly visible): a Healer with a green healing aura on the team
+
+ENEMIES: At least 8 enemy silhouettes — dark armored soldiers, zombies, skeleton archers — closing in from all sides. Some are mid-leap.
+
+CENTERPIECE: The hot-pink crystal cluster glows brightly between the players, casting pink rim-light on everyone.
+
+ENVIRONMENT: Grass arena floor, dark stormy sky overhead, cyan lightning bolts in the background, embers floating in the air.
+
+TEXT OVERLAY: Top of the image — "PLAY WITH FRIENDS!" in HUGE bold yellow text with thick black outline and a hot-pink glow drop-shadow. All caps, chunky game-icon font. Below it, smaller white text with black outline: "UP TO 4 PLAYERS".
+
+STYLE: Mobile game thumbnail style, like Roblox Tower Defense Simulator co-op screens. Vibrant, cel-shaded, dynamic action. The image should fill the entire frame edge-to-edge with no borders or padding. No watermarks. No extra text other than "PLAY WITH FRIENDS!" and "UP TO 4 PLAYERS".

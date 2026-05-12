@@ -1,0 +1,17 @@
+Roblox game thumbnail, 16:9 widescreen, 1280x720.
+
+LAYOUT: Six Roblox blocky-style characters lined up shoulder-to-shoulder, facing the viewer head-on, in a hero pose. Group photo style, slight low angle so they look powerful. Hot-pink crystal cluster glowing behind them, lighting them from behind.
+
+CHARACTERS (left to right):
+1. FIGHTER — wearing red knight armor, holding a crystal sword raised, helmet visor up showing determined face
+2. HEALER — wearing white robes with a glowing halo, holding a green-glowing healing staff, soft smile
+3. BUILDER — wearing yellow construction helmet and brown apron, holding a wrench, blueprints under one arm
+4. MAGE — wearing purple wizard robes and a tall pointed hat, holding a lightning staff with cyan electricity arcing
+5. SHOOTER — wearing tactical green gear with a quiver of arrows, holding a glowing crystal bow
+6. RECRUITER — wearing dark commander gear with epaulets, holding a horn, with a small soldier companion at their feet
+
+LABEL OVERLAY: Below each character, a small chunky text label with the class name in white with black outline: "FIGHTER", "HEALER", "BUILDER", "MAGE", "SHOOTER", "RECRUITER".
+
+TITLE OVERLAY: Across the top of the image, in HUGE bold yellow text with thick black outline — "6 CLASSES!" Very readable.
+
+STYLE: Mobile game thumbnail style, like Roblox Anime Defenders character-select screens. Vibrant, cel-shaded, bold colors. The image should fill the entire frame edge-to-edge with no borders or padding. No watermarks. No extra text other than the 6 class names + "6 CLASSES!".

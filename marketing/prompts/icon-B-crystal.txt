@@ -1,0 +1,13 @@
+Roblox game icon, 1:1 square composition, vibrant high-contrast colors.
+
+NO CHARACTER. The hero of this icon is the CRYSTAL itself.
+
+CENTERPIECE: A massive multi-spire crystal cluster glowing intensely in hot pink (#FF2D95) and magenta. Multiple jagged crystal spires of various heights, the tallest in the center. The crystal is CRACKED — bright hot-pink light bleeds through the fractures as if it's about to shatter. Sparks and shards of crystal flying off. The crystal fills about 65-70% of the frame, centered.
+
+ENEMIES: Dark menacing soldier and zombie SILHOUETTES attacking from all sides — 5 or 6 of them around the bottom and edges. Pure black/dark-grey silhouettes with GLOWING RED EYES. Some have raised swords, some are mid-leap. Just silhouettes — no faces, no detail. They create a ring of threat around the crystal.
+
+LIGHTING: Strong backlight from the crystal — its pink glow rims the silhouettes and casts long shadows across the ground. The crystal is the only light source.
+
+BACKGROUND: Very dark — near-black with a hint of deep purple. A few embers and pink particles in the air.
+
+STYLE: Mobile game icon style, like Roblox Tower Defense Simulator or All Star Tower Defense — bold, saturated, readable at 150x150 pixels. Cel-shaded with strong rim-lighting. Tense, urgent, "the crystal is in danger" energy. No text. No watermarks. No UI. Square composition (1:1). The image should fill the entire frame edge-to-edge with no borders or padding.

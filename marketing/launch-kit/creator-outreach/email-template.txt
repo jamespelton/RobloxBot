@@ -1,0 +1,178 @@
+CREATOR OUTREACH — EMAIL / DM TEMPLATE
+
+---
+
+DEFAULT TEMPLATE (cold email or YouTube DM):
+
+Subject: Free 500 Robux + custom in-game tag for covering Crystal Siege?
+
+Hey [CREATOR_FIRST_NAME],
+
+I'm James — a dad-and-son dev team (my 12yo Hayden helps build) shipping a new Roblox tower-defense survival game called **Crystal Siege**. Watched your recent video on [SPECIFIC_VIDEO_TITLE] and thought you'd vibe with what we're building.
+
+Quick pitch:
+- 6 classes (Fighter, Healer, Builder, Mage, Shooter, Recruiter)
+- 30+ buildings (turrets, cannons, walls, traps)
+- Co-op for up to 4 players
+- Boss fights every 5 waves + endless mode
+
+We'd love to send you:
+- **500 Robux** as a thank-you
+- A **custom in-game chat tag** with your channel name
+- Early access to next month's update (new boss + new map)
+- A **personalized promo code** — viewers get 200 free gems when they use `CODE: [YOUR_NAME]`
+
+Zero strings attached. Cover it, don't cover it, whatever feels right for your channel.
+
+🔗 Play: [ROBLOX_GAME_URL]
+🎁 Test code: CRYSTALSIEGE (for free gems on your first run)
+
+Let me know if you're interested — happy to set up the rewards anytime.
+
+James
+Crystal Siege Dev Team
+james.pelton@forgood.ai
+
+---
+
+VARIATIONS BY CREATOR TYPE:
+
+### For Pure Tower Defense YouTubers (JustADuckie, JustHarrison, iamEvan, Photon)
+
+Subject: New Roblox TD with classes + buildings — would love your take
+
+Hey [NAME],
+
+Big fan of your TDS coverage — your [SPECIFIC_VIDEO_TITLE] video was the kind of breakdown I rewatched a few times.
+
+I'm building a new Roblox TD called **Crystal Siege** with my 12yo son Hayden — co-op wave defense with 6 classes and a deep building system. Came out of the same itch that made me love TDS but wanting more class depth.
+
+I'd love to send you early access — plus 500 Robux, a custom tag, and a personalized promo code (CODE: [YOUR_NAME] → 200 gems for your viewers).
+
+If it's interesting, I'd genuinely value the feedback from someone who knows the TD space cold. And if you cover it, even better.
+
+🔗 [ROBLOX_GAME_URL]
+🎁 CODE: CRYSTALSIEGE for free gems
+
+James
+Crystal Siege Dev Team
+james.pelton@forgood.ai
+
+---
+
+### For Roblox Variety / Kid-Friendly YouTubers (NutMeg, KoKo Panda, AmberRains, JuniDrawz)
+
+Subject: Would love your take on this new Roblox game (free Robux + custom tag)
+
+Hey [NAME],
+
+I've been watching your channel — your community feels really genuine, especially around [WHAT_THEY_DO_WELL].
+
+I'm James and I built a new Roblox game called **Crystal Siege** with my son Hayden (he's 12 and basically my game-design partner). It's a co-op tower defense with 6 classes — fighter, healer, mage, etc — boss fights every 5 waves, and a building system where you place turrets and walls to defend a giant crystal.
+
+If you'd like to check it out, we'd send you:
+- 500 Robux as a thank-you
+- A custom in-game chat tag with your name
+- Your own promo code (CODE: [YOUR_NAME] → 200 gems for your viewers)
+
+No pressure to cover it — just want it in front of creators we respect.
+
+🔗 [ROBLOX_GAME_URL]
+🎁 CODE: CRYSTALSIEGE for free gems
+
+James
+Crystal Siege Dev Team
+james.pelton@forgood.ai
+
+---
+
+### Follow-up after 7 days (no reply)
+
+Subject: Re: Crystal Siege — quick bump
+
+Hey [NAME] — wanted to bump my email from last week in case it got buried.
+
+If you're swamped or it's not a fit, totally no worries. I'll move on quietly.
+
+If you DID want to check it out, the offer's still on the table:
+- 500 Robux + custom tag + personalized code
+
+🔗 [ROBLOX_GAME_URL]
+
+James
+
+---
+
+### Reply when they say YES
+
+Hey [NAME] — awesome, thanks for being open to it!
+
+To get you set up:
+1. **Your Roblox username:** so I can apply the custom tag + add you as a tester
+2. **Your channel name (for the promo code):** so I can wire up `CODE: [YOUR_NAME]`
+3. **Discord ID** (optional, if you want to join our dev Discord)
+
+I'll process everything within 24 hours and send the 500 Robux through Roblox's gift system once your username is added.
+
+Anything specific you'd like to see/test? Always happy to walk through the dev side or pull any data you'd find useful for a video.
+
+James
+
+---
+
+### Reply when they say NO or "not right now"
+
+Hey [NAME] — totally understand. No worries.
+
+If anything changes down the line, the door's open. Best of luck with the channel!
+
+James
+
+---
+
+DO'S AND DON'TS:
+
+✅ DO personalize by mentioning a specific video they made
+✅ DO use first names — feels human, not corporate
+✅ DO put the offer up-front (500 Robux + tag + code)
+✅ DO sign off with your real name + role + email
+✅ DO mention Hayden — the dad-and-son angle is genuinely interesting
+✅ DO follow up ONCE after 7 days, then move on
+
+❌ DON'T mass-email 30 people from the same thread. Send one at a time.
+❌ DON'T promise revenue share or affiliate income — too complicated, breaks at scale
+❌ DON'T promise more than you can deliver. Under-promise, over-deliver.
+❌ DON'T be pushy. One follow-up max. No third email.
+❌ DON'T claim you'll go viral with their help. Be honest about being small.
+❌ DON'T pretend to be a bigger company than you are.
+
+---
+
+REALISTIC EXPECTATIONS:
+
+- Reply rate: 5-15% (the doc said this, real-world Roblox creator outreach is closer to 5%)
+- "Yes to cover" rate of those who reply: 20-40%
+- So 30 emails → 1.5-4 actual videos
+
+For 30 sends:
+- 2-5 replies (positive or negative)
+- 1-2 videos within 30 days
+
+If you get ZERO replies after 30 sends, the email is broken — not the audience. Iterate on the subject line first, then the offer.
+
+---
+
+TRACKING
+
+Keep a simple spreadsheet:
+
+| Date Sent | Channel | Reply? | Decision | Code Issued | Video Live? |
+|-----------|---------|--------|----------|-------------|-------------|
+| 2026-05-12 | JustADuckie | - | - | - | - |
+| ... | | | | | |
+
+When a video goes live, track:
+- Video URL
+- Views after 7 days
+- Code redemptions tied to their code
+- Net new game plays attributable

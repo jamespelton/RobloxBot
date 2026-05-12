@@ -1,0 +1,11 @@
+Roblox game icon, 1:1 square composition, vibrant high-contrast colors.
+
+LAYOUT: Split top/bottom — character on top 65%, big bold text overlay on bottom 35%.
+
+CHARACTER (top 65%, matches the attached reference exactly): Roblox blocky-style avatar — brown spiked hair, black pixelated "deal with it" shutter shades, grey-and-black plaid flannel shirt, gold chain necklace with a glowing green gem pendant, light blue jeans, white sneakers. Defensive heroic pose — glowing crystal sword in one hand, glowing crystal shield in the other, ready to defend. Face-forward, slightly low-angle so he looks heroic. A hot-pink crystal cluster glows behind him.
+
+TEXT (bottom 35%): The words "DEFEND THE CRYSTAL!" in HUGE BOLD CHUNKY game-style lettering. Color: bright yellow (#FFD700) with thick black outlines, layered with a slight magenta drop-shadow. The text style is the same as popular Roblox tower-defense game icons — fat, friendly, all-caps, very readable at 150x150 pixels. The text spans the full width of the bottom of the icon. It is the FIRST thing the eye sees.
+
+BACKGROUND: Dark stormy sky with a hot-pink crystal energy glow rim-lighting the scene. A couple cyan lightning bolts.
+
+STYLE: Mobile game icon style, like Roblox Tower Defense Simulator, Doors, or All Star Tower Defense — bold, saturated, eye-catching. Cel-shaded. No watermarks. No extra text other than "DEFEND THE CRYSTAL!" — do not add subtitles, credits, version numbers, or any other words. Square composition (1:1). The image should fill the entire frame edge-to-edge with no borders or padding.

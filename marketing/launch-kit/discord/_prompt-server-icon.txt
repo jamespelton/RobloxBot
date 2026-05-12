@@ -1,0 +1,7 @@
+Discord server icon, 512x512 square (1:1).
+
+A hot-pink glowing crystal cluster — multi-spire crystal in the style of the Crystal Siege game logo. The crystal fills about 70% of the frame, centered. The crystal has 5-7 jagged spires with the tallest in the middle. Color: vibrant hot-pink (#FF2D95) with magenta highlights and white-hot core glow. Energy beams radiating outward in a subtle starburst pattern.
+
+Behind the crystal: a dark navy-to-purple radial gradient background. A few scattered white-pink particles and tiny gem shapes floating around the crystal.
+
+Style: clean, iconographic, MUST be readable at small sizes (Discord shows server icons at 24x24 in the sidebar). Bold, simple silhouette. NO text, NO watermarks, NO UI elements. The crystal should be the clear focal point. Solid edge-to-edge — no borders. Saturated colors.

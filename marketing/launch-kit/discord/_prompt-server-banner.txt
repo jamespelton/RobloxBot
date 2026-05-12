@@ -1,0 +1,13 @@
+Discord server banner, 16:9 widescreen, 960x540 (Discord crops to ~ 5:1 final display).
+
+SCENE: A panoramic shot of the Crystal Siege arena. The hot-pink crystal cluster towers in the CENTER of the frame, glowing intensely, with energy beams shooting upward into a dark stormy sky. Cyan lightning bolts arc across the sky.
+
+ON BOTH SIDES OF THE CRYSTAL: Stone arena walls with corner towers. Glowing magenta runes carved into the walls.
+
+FOREGROUND: A row of 4 Roblox blocky-style characters silhouetted in defensive poses, facing the crystal (their backs to the camera). Each is a different class — you can see the silhouette of a knight with a sword, a wizard with a staff, a healer with a halo, a builder with a wrench. They look small compared to the crystal — the crystal is the hero of the shot.
+
+ENVIRONMENT: Grass arena floor in the foreground. Stone tile walkway leading to the crystal. Embers and pink particles floating in the air. Dark stormy sky with lightning.
+
+TEXT: NO text overlay (Discord adds the server name on top of the banner — keep it clean).
+
+STYLE: Cinematic, wide-shot, epic. Mobile game promotional art style. Bold saturated colors, cel-shaded, dramatic backlighting. The image should fill the entire frame edge-to-edge with no borders or padding. No watermarks.

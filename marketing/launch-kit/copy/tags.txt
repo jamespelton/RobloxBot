@@ -1,0 +1,33 @@
+Roblox game tags (max 20 allowed in Creator Hub):
+
+PRIMARY (highest-volume search terms):
+1. Tower Defense
+2. Survival
+3. Co-op
+4. Wave Defense
+5. Multiplayer
+6. Defense
+
+SECONDARY (genre-adjacent, niche but relevant):
+7. Crystal
+8. RPG
+9. Adventure
+10. Combat
+11. Fighter
+12. Magic
+13. Classes
+14. Boss Fight
+15. Endless
+
+LONG-TAIL (lower-volume but high-intent searchers):
+16. Tower Defense Simulator
+17. Anime Defenders
+18. Wave Survival
+19. Co-op Tower Defense
+20. Crystal Siege
+
+NOTES:
+- Tags are NOT the same as the title. Roblox uses tags for filtering inside genre browse pages.
+- Don't add tags that are clearly off-genre (e.g., "Obby", "Simulator", "Roleplay") — Roblox flags spammy tagging and demotes you.
+- Re-evaluate tags every 2-4 weeks. If a term isn't bringing impressions in Creator Hub analytics, swap it for a more relevant one.
+- "Tower Defense Simulator" and "Anime Defenders" as tags is debated — they're competitor names. Pros: catches search traffic from those games. Cons: Roblox may consider it brand-jacking and demote. Test for 1 week and watch for warnings.

@@ -1,0 +1,43 @@
+DISCORD WELCOME BOT MESSAGE
+Bot: MEE6 or Carl-bot
+Channel: Set as welcome channel in bot dashboard, OR send to #💬-general on member join
+
+---
+
+WELCOME MESSAGE TEMPLATE:
+
+Welcome to Crystal Siege, {user.mention}! 🔮
+
+⚔️ **Play the game** → https://roblox.com/games/[GAME_ID]
+🎁 **Use code CRYSTALSIEGE** for FREE gems on your next login
+👥 **Join the Roblox group** for an exclusive cape → [GROUP_INVITE_URL]
+🔔 React to the bell 🔔 in <#📋-rules> to get pinged on Friday updates
+
+We're a small dev team (James + his son Hayden, 12) building this game on weekends. Drop a screenshot in <#🖼️-base-builds>, share clips in <#📸-clips>, and let us know what you want next in <#💡-suggestions>!
+
+Have fun and defend that crystal 💎
+
+---
+
+VARIABLES TO REPLACE BEFORE PUBLISHING:
+
+- {user.mention} — MEE6/Carl-bot auto-resolves this
+- [GAME_ID] — fill in with your Roblox game's URL ID
+- [GROUP_INVITE_URL] — fill in with your Roblox group URL
+
+---
+
+ADDITIONAL BOT MESSAGES:
+
+REACTION ROLE MESSAGE (in #📋-rules):
+React to opt in to optional roles:
+🔔 Update Pings — get notified for Friday updates
+🎯 Looking For Group — get notified when others want to play
+
+LEVEL-UP MESSAGE (MEE6 leveling, optional):
+{user.mention} just leveled up! ⚔️ Level {level} — keep defending that crystal!
+
+MILESTONE WELCOME (when server hits 100 members):
+Welcome, {user.mention} — you're our 100th member! 🎉 Use code MEMBER100 in-game for a special reward!
+
+(Note: requires James to actually wire up MEMBER100 code in CodeManager.)

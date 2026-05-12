@@ -1,0 +1,15 @@
+Roblox game thumbnail, 16:9 widescreen, 1280x720.
+
+LAYOUT: Split-screen, three vertical panels showing the same arena scene under three different weather conditions, left to right.
+
+LEFT PANEL (Sunny): The Crystal Siege arena in bright daylight, blue sky, fluffy clouds, sun shining, vibrant green grass, hot-pink crystal in the center glowing. Cheerful and bright. Labeled at the bottom: "SUNNY".
+
+MIDDLE PANEL (Rainy): The same arena in heavy rain, dark grey storm clouds overhead, rain streaks visible across the panel, puddles on the ground, dramatic cyan lightning bolt arcing in the background, the crystal glowing more intensely against the dark. Labeled at the bottom: "RAINY".
+
+RIGHT PANEL (Snowy): The same arena covered in snow, white snowflakes falling, the grass and stone are white-dusted, frosty atmosphere, the crystal glows like a beacon in the cold. Trees in the background are frosted. Labeled at the bottom: "SNOWY".
+
+DIVIDERS: Thin white lines separating the three panels.
+
+TEXT OVERLAY: Top of the image, spanning all three panels — "DYNAMIC WEATHER!" in HUGE bold yellow text with thick black outline and a cyan glow drop-shadow. All caps, chunky game-icon font, very readable.
+
+STYLE: Mobile game thumbnail style. Vibrant, cel-shaded, atmospheric. Each panel should be readable individually. The image should fill the entire frame edge-to-edge with no borders or padding. No watermarks. No extra text other than "DYNAMIC WEATHER!" and the three weather labels.
