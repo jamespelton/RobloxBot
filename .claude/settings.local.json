@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p /tmp/rex_chunks)",
+      "Bash(rm -f /tmp/rex_chunks/*)",
+      "Bash(head -c 100000 /tmp/rex_icon_b64.txt)",
+      "Read(//tmp/rex_chunks/**)"
+    ]
+  }
+}
