@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "/usr/bin/python3 /Users/jamespelton/Apps/React/Jimmy-Assistant/bot_mail_hook.py"
+          }
+        ]
+      }
+    ]
+  }
+}
