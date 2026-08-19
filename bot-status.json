@@ -1,18 +1,18 @@
 {
   "bot": "Rex (Roblox)",
-  "last_updated": "2026-08-19T17:32:00-05:00",
-  "updated_at": "2026-08-19T17:32:00-05:00",
+  "last_updated": "2026-08-19T18:05:00-05:00",
+  "updated_at": "2026-08-19T18:05:00-05:00",
   "status": "healthy",
-  "summary": "Casino: swapped in James's slot + blackjack models, collision audit clean, desaturated",
+  "summary": "Casino is now playable: slots, blackjack, roulette, chips currency, E-to-interact",
   "urgent": [
-    "Place is STILL UNSAVED (Place1, placeId 0). Now more important than before: James's imported slot machine and blackjack table use UnionOperations and Decals, which the build-library JSON export does NOT round-trip faithfully. If Studio closes without saving, those models are lost. File > Save to File As."
+    "Place is STILL UNSAVED (Place1, placeId 0). It now holds ~38KB of game logic as well as the build. Script sources are committed under casino/ and geometry under build-library/, but the imported union/decal models cannot be rebuilt from either. File > Save to File As."
   ],
   "needs_james": [
-    "SAVE THE PLACE. See urgent above \u2014 the JSON backup cannot rebuild the imported union/decal models.",
-    "Screenshots stopped working this session (capture_screenshot times out at ~14.7k parts), so the desaturation and the swapped-in models were verified numerically, not visually. Give it a look and tell Rex if the tone is now too muted or not muted enough.",
-    "Part count went 6,063 -> 14,757 because the imported slot machine is ~100 parts each x112. If it feels heavy in playtest, Rex can thin the banks (fewer machines, wider spacing) without changing the layout.",
-    "Decide whether the casino is its own game or a venue inside an existing game.",
-    "CLAUDE.md still only describes Crystal Siege while Rex maintains Crystal Siege + Vehicle Tycoon + this casino."
+    "SAVE THE PLACE.",
+    "Playtest the games. Rex verified wiring and math numerically but could NOT verify in-game: playtest log capture returned no output and capture_screenshot times out at this part count. Nobody has actually watched a reel spin yet.",
+    "Publish the place if you want chips to persist - DataStore is wired but inert until then, so balances reset every session.",
+    "Poker and craps tables are still decoration; say the word and Rex will wire them up too.",
+    "Decide whether the casino is its own game or a venue inside an existing game."
   ],
   "needs_james_carried_over": {
     "note": "Open items from earlier sessions that Rex could not verify this session \u00e2\u20ac\u201d this session used a different, blank place. Clear them if already done.",
@@ -26,30 +26,37 @@
     "scripts_modified": 0,
     "studio_changes": 11,
     "game": "Golden Spire Casino (new, standalone)",
-    "game_status": "art-pass done, imported models integrated",
+    "game_status": "playable",
     "part_count": 14757,
     "light_count": 156,
     "collidable_parts": 1793,
     "slot_machines": 112,
     "blackjack_tables": 6,
-    "seats": 215
+    "seats": 215,
+    "playable_slot_machines": 112,
+    "playable_blackjack_tables": 6,
+    "playable_roulette_tables": 2,
+    "scripts": 4,
+    "script_bytes": 38144,
+    "slots_rtp_pct": 91.3,
+    "roulette_rtp_pct": 97.0
   },
   "session_changes": [
-    "Imported James's two models: moved Workspace.Model -> ServerStorage.BlackjackTableTemplate and Workspace['Casino Machine By Underworld'] -> ServerStorage.SlotMachineTemplate (originals preserved there, not deleted)",
-    "Stripped 4 filler scripts from the slot machine template (13KB 'TextureConfig'/'PoseTexture' Scripts nested inside a Decal, plus a ModuleScript). Scanned them for backdoor patterns first (require-by-id, loadstring, HttpService, obfuscated escapes) - came back clean, removed as dead weight so 112 copies would not carry 336 scripts",
-    "Replaced all 112 built-from-scratch slot machines with the imported model, reusing the exact bank CFrames. Normalised the template pivot to its true geometric centre first - the asset's pivot was offset ~3 studs in XZ, which would have shifted every machine",
-    "Replaced all 6 blackjack tables with the imported table, keeping my 36 chair parts per table. Determined facing geometrically (binned parts by X, measured Z-span: flat dealer edge at -X span 10.7, curved player edge at +X span 1.1) -> yaw +90 puts players on the -Z side where the chairs already are",
-    "COLLISION AUDIT: model-level AABB sweep over 257 items found 2 overlaps; part-level sweep found 32 wall/ceiling intrusions, of which 14 were deliberate mountings (chandelier mounts, wall signs, jackpot board) and 18 were real",
-    "FIX: 2 lobby palms (14 parts) were buried in the south wall - moved 8 studs inward",
-    "FIX: porte-cochere canopy assembly (17 parts) was punched 2 studs through the south wall - shifted 3.5 studs south",
-    "COLLISION SIMPLIFY: set CanCollide=false on 10,406 detail parts and gave each of the 118 machines/tables a single invisible collider box. Collidable parts now 1,793 of 14,757 (12.2%) - stops players snagging on LEDs and cuts physics broadphase cost",
-    "Re-audit after fixes: 0 unintended intrusions, 0 machines/tables sunk below or floating above the floor",
-    "DESATURATION: pulled 3,592 parts 40% toward luminance, 641 neon parts 45% + 12% darker, 13 GUI text labels 45%; converted 669 Foil parts from bright gold to antique brass rgb(158,138,94); hand-tuned carpet/medallion/pit palette; ColorCorrection saturation 0.12 -> -0.18, bloom 0.22 -> 0.16. Imported models excluded - they were already muted. Verified colours kept identity (carpet sat 0.49, medallion 0.36) rather than going grey",
-    "Re-exported to build-library/modern/golden_spire_casino.json (1.9MB, 14,759 parts, 98 palette entries)"
+    "Built a chips economy: leaderstats Chips, 500 starting balance, DataStore persistence guarded by pcall so it activates on publish and no-ops until then",
+    "CasinoCore exposes _G.CasinoBank with a single authoritative tryDeduct path - bets are never taken from client input",
+    "SlotService: ProximityPrompt (E) on all 112 machines. Drives the asset's own 3 reel cylinders by attaching a SurfaceGui to the same face as each existing Decal, which guarantees it faces the player without hardcoding an orientation. Staggered reel stops at 0.90/1.30/1.75s, lever pull animation via CFrame.fromAxisAngle about the lever base, LED flash, and a BillboardGui showing the win",
+    "Slot paytable: 6 symbols weighted 30/25/18/13/9/5 paying 8x-225x for three of a kind plus consolation pairs. Simulated 300,000 spins: 91.3% RTP, 26.9% hit rate, 38x+ about 1 in 328",
+    "TableGames blackjack on all 6 imported tables: 6-deck shoe reshuffled below 60 cards, dealer stands on all 17, blackjack pays 3:2, double on first two cards. Ace demotion unit-tested 8/8 including two-aces, five-card-ace and hard-bust cases",
+    "TableGames roulette on both wheels: single zero, red/black/odd/even pay 2x and green pays 36x. Physically spins the model's Wheel/Pocket/Hub/Ball parts for 3.2s with an ease-out before revealing. Simulated RTP ~97% across all bet types, matching the 2.7% single-zero house edge",
+    "Cashier desk prompt grants 250 chips on a 2 minute cooldown, waived at zero so a player can never be stranded",
+    "CasinoClient: chips HUD with a 5-step bet selector, toast notifications, full blackjack panel with rendered cards and suit glyphs, roulette betting panel. Palette matched to the desaturated room",
+    "Verified against the real world state: 112/112 machines rig-ready, reel parts sort to 3 distinct ordered positions, 6 blackjack tables wireable, roulette centre and 21 moving parts found, cashier counter present, 0 leftover artefacts in edit mode",
+    "Committed all 4 script sources under casino/ with a README covering install locations, required RemoteEvents, world-object dependencies, measured house edge and known gaps. Byte lengths verified against Studio (4418/9497/10805/13424)"
   ],
   "notes": [
-    "capture_screenshot times out reliably once the place is ~14.7k parts. Three attempts failed with the camera confirmed in open space (0 parts within 3 studs), so it is scene weight, not camera placement.",
-    "The 180-degree camera quirk from earlier is still present and still inconsistent - it flipped again mid-session. Verify builds by querying coordinates."
+    "capture_screenshot times out at this part count; playtest log capture also returned nothing this session. Both visual and runtime verification are currently unavailable - fall back to querying world state and simulating logic in edit mode.",
+    "get_script_analysis DOES work and caught nothing after the final edits; use it as the syntax gate.",
+    "Free-model audit habit: the imported slot machine carried three 13KB scripts nested inside a Decal. Scanned clean, but always check before cloning an asset en masse."
   ],
   "next_run_needed": "2026-08-20"
 }
