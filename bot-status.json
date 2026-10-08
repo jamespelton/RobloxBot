@@ -1,13 +1,28 @@
 {
   "bot": "Rex (Roblox)",
-  "last_updated": "2026-08-19T18:05:00-05:00",
-  "updated_at": "2026-08-19T18:05:00-05:00",
-  "status": "healthy",
-  "summary": "Casino is now playable: slots, blackjack, roulette, chips currency, E-to-interact",
+  "last_updated": "2026-10-07T20:30:00-05:00",
+  "updated_at": "2026-10-07T20:30:00-05:00",
+  "status": "needs_attention",
+  "summary": "Crystal Siege locked 16+ by Roblox review; free-route push kit staged, needs ID verify",
   "urgent": [
     "Place is STILL UNSAVED (Place1, placeId 0). It now holds ~38KB of game logic as well as the build. Script sources are committed under casino/ and geometry under build-library/, but the imported union/decal models cannot be rebuilt from either. File > Save to File As."
   ],
   "needs_james": [
+    {
+      "text": "Crystal Siege under-16: verify ID + turn on 2FA on JimmyP722 BEFORE any traffic push (create.roblox.com/settings/eligibility/publishing-permissions)",
+      "added": "2026-10-07T20:30:00-05:00",
+      "source": "marketing/16plus-push/README.md"
+    },
+    {
+      "text": "Crystal Siege: play one full round (last update Jun 10) and replace the live game description, which claims 30+ buildings / bosses every 5 waves / 4-player co-op",
+      "added": "2026-10-07T20:30:00-05:00",
+      "source": "marketing/16plus-push/game-description.txt"
+    },
+    {
+      "text": "Crystal Siege push: walk DevForum post, 4 TD creator emails, 2 Reddit posts one at a time for approval",
+      "added": "2026-10-07T20:30:00-05:00",
+      "source": "marketing/16plus-push/"
+    },
     "SAVE THE PLACE.",
     "Playtest the games. Rex verified wiring and math numerically but could NOT verify in-game: playtest log capture returned no output and capture_screenshot times out at this part count. Nobody has actually watched a reel spin yet.",
     "Publish the place if you want chips to persist - DataStore is wired but inert until then, so balances reset every session.",
@@ -15,11 +30,11 @@
     "Decide whether the casino is its own game or a venue inside an existing game."
   ],
   "needs_james_carried_over": {
-    "note": "Open items from earlier sessions that Rex could not verify this session \u00e2\u20ac\u201d this session used a different, blank place. Clear them if already done.",
+    "note": "Open items from earlier sessions that Rex could not verify this session â€” this session used a different, blank place. Clear them if already done.",
     "items": [
       "Crystal Siege: verify dead trees plant flush after the next desert vote (raycast-up grounding fix shipped 2026-04-27)",
       "Crystal Siege: when ready, File > Publish to Roblox so the latest build is live",
-      "Vehicle Tycoon: playtest Rare Boat \u00e2\u20ac\u201d if it drives sideways/backwards, tell Rex which way it faces and we'll set facingOffset (currently CFrame.new())"
+      "Vehicle Tycoon: playtest Rare Boat â€” if it drives sideways/backwards, tell Rex which way it faces and we'll set facingOffset (currently CFrame.new())"
     ]
   },
   "metrics": {
@@ -39,7 +54,9 @@
     "scripts": 4,
     "script_bytes": 38144,
     "slots_rtp_pct": 91.3,
-    "roulette_rtp_pct": 97.0
+    "roulette_rtp_pct": 97.0,
+    "crystal_siege_lifetime_visits_2026_10_07": 498,
+    "crystal_siege_hep_threshold": "250 now, 100 from Nov 2026 (RDC26), rolling 60 days"
   },
   "session_changes": [
     "Built a chips economy: leaderstats Chips, 500 starting balance, DataStore persistence guarded by pcall so it activates on publish and no-ops until then",
@@ -58,5 +75,5 @@
     "get_script_analysis DOES work and caught nothing after the final edits; use it as the syntax gate.",
     "Free-model audit habit: the imported slot machine carried three 13KB scripts nested inside a Decal. Scanned clean, but always check before cloning an asset en masse."
   ],
-  "next_run_needed": "2026-08-20"
+  "next_run_needed": "2026-10-08"
 }

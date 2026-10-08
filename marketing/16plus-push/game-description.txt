@@ -1,0 +1,28 @@
+Defend the Crystal from waves of enemies with your friends!
+
+🎯 6 classes: Fighter, Healer, Builder, Mage, Shooter, Recruiter
+🏰 9 kinds of defenses (walls, spike traps, turrets, cannons, healing stations and more), each with 3 upgrade tiers
+👹 Boss fights at wave 5 and wave 10, then endless mode
+⚔️ Scouts, Tanks, Archers and Bombers, all coming for the Crystal
+🛟 Get knocked down? A teammate can revive you
+🎁 Loot chests, daily rewards and gems
+🌧️ Weather that changes: sunny, rain, snow
+
+HOW TO PLAY
+1. Pick a class
+2. Build and upgrade defenses between waves
+3. Keep the Crystal alive
+4. See how far you get in endless mode
+
+💎 Use code CRYSTALSIEGE for free gems
+
+👍 Like and favorite if you had fun!
+
+---
+
+NOTES FOR JAMES (don't paste below this line):
+- Replaces the live description, which says "30+ buildings", "boss battles every 5 waves" and
+  "co-op up to 4 players". None of those match the game.
+- Before publishing, check the CRYSTALSIEGE code still works in a live server.
+- Discord and group links are left out because neither exists yet. Add them when they do.
+- About 700 characters, under Roblox's 1,000 limit.
