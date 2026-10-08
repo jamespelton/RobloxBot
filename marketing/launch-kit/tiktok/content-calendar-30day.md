@@ -31,7 +31,7 @@
 ### Week 1 — Launch Pump
 
 **Day 1 — Tuesday "POV: New Game Drop"**
-- HOOK: "POV: you stumble on a Roblox game with 6 classes, 30+ buildings, AND boss fights"
+- HOOK: "POV: you stumble on a Roblox game with 6 classes, 9 kinds of defenses, AND boss fights"
 - VISUAL: Quick cuts: class selection screen → building placement → boss intro cinematic
 - CAPTION: "New Roblox TD just dropped 🔮 link in bio!"
 - AUDIO: Trending "POV" sound (search TikTok for current week's top POV audio)

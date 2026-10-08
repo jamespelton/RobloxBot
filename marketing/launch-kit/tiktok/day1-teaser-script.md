@@ -15,10 +15,10 @@
 
 ### [0:03 – 0:06] WHAT IS IT
 **Camera:** Still on face, maybe lean in
-**You say:** "It's called Crystal Siege. 6 classes, 30+ buildings, co-op bosses."
+**You say:** "It's called Crystal Siege. 6 classes, 9 defenses, co-op bosses."
 **Text overlay:** Cut between three quick text frames in time with your words:
   - "6 CLASSES"
-  - "30+ BUILDINGS"
+  - "BUILD YOUR DEFENSES"
   - "EPIC BOSS FIGHTS"
 
 ### [0:07 – 0:10] CRYSTAL REVEAL

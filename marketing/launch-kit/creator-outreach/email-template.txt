@@ -12,9 +12,9 @@ I'm James — a dad-and-son dev team (my 12yo Hayden helps build) shipping a new
 
 Quick pitch:
 - 6 classes (Fighter, Healer, Builder, Mage, Shooter, Recruiter)
-- 30+ buildings (turrets, cannons, walls, traps)
-- Co-op for up to 4 players
-- Boss fights every 5 waves + endless mode
+- 9 kinds of defenses (turrets, cannons, walls, traps), each with 3 upgrade tiers
+- Co-op
+- Boss fights at wave 5 and wave 10, then endless mode
 
 We'd love to send you:
 - **500 Robux** as a thank-you
@@ -68,7 +68,7 @@ Hey [NAME],
 
 I've been watching your channel — your community feels really genuine, especially around [WHAT_THEY_DO_WELL].
 
-I'm James and I built a new Roblox game called **Crystal Siege** with my son Hayden (he's 12 and basically my game-design partner). It's a co-op tower defense with 6 classes — fighter, healer, mage, etc — boss fights every 5 waves, and a building system where you place turrets and walls to defend a giant crystal.
+I'm James and I built a new Roblox game called **Crystal Siege** with my son Hayden (he's 12 and basically my game-design partner). It's a co-op tower defense with 6 classes — fighter, healer, mage, etc — boss fights at wave 5 and wave 10, and a building system where you place turrets and walls to defend a giant crystal.
 
 If you'd like to check it out, we'd send you:
 - 500 Robux as a thank-you

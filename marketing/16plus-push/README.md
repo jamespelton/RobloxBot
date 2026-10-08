@@ -66,8 +66,9 @@ Everything in this folder uses only the feature list in `CLAUDE.md`.
 | "Boss battles every 5 waves" | Bosses at wave 5 and wave 10, then every 50 waves in endless |
 | "Co-op for up to 4 players" | Co-op; server max is 50, no verified 4-player cap |
 
-**Old kit, still unfixed:** `../launch-kit/creator-outreach/email-template.txt` and
-`../launch-kit/ads/ad-copy-variants.md` still have the old claims. Don't send from them.
+The same claims are now fixed across `../launch-kit/` too (copy, outreach template, ad copy,
+TikTok scripts). The old outreach template still offers a custom chat tag and personal promo codes
+that don't exist in the game, so use `creator-outreach.md` here instead.
 
 **Also worth knowing:** the game-page thumbnails are AI-generated. DevForum readers spot that
 fast ("everything looks AI" was the first reply on a similar post this week). Real gameplay

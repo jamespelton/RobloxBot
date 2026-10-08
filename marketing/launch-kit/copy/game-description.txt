@@ -3,9 +3,9 @@
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 🎯 6 unique classes — Fighter, Healer, Builder, Mage, Shooter, Recruiter
-🏰 30+ buildings — turrets, cannons, walls, traps, healing stations
-👹 Boss battles every 5 waves
-👥 Co-op for up to 4 players
+🏰 9 kinds of defenses, each with 3 upgrade tiers
+👹 Boss fights at wave 5 and wave 10
+👥 Co-op
 🎁 Daily login rewards + free gems
 🌧️ Dynamic weather — sunny, rainy, snowy
 

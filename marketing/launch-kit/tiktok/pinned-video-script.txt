@@ -18,7 +18,7 @@ VISUAL: Lineup of all 6 classes (use thumbnail #2 as reference) — players show
 SOUND: Music continues, hit on the beat
 
 [0:05 - 0:07]
-TEXT OVERLAY: "30+ BUILDINGS"
+TEXT OVERLAY: "BUILD YOUR DEFENSES"
 VISUAL: Time-lapse of base being built — turrets, walls, traps all snapping into place
 SOUND: Construction sound layered with music
 
@@ -50,7 +50,7 @@ SOUND: Music outro
 ---
 
 CAPTION:
-🔮 New Roblox TD just dropped! 6 classes, 30+ buildings, boss fights. Code: CRYSTALSIEGE for FREE GEMS 💎
+🔮 New Roblox TD just dropped! 6 classes, 9 defenses, boss fights. Code: CRYSTALSIEGE for FREE GEMS 💎
 
 HASHTAGS:
 #roblox #robloxtower #towerdefense #crystalsiege #robloxcode #fyp

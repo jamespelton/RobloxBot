@@ -9,7 +9,7 @@ For Roblox Creator Hub → Ads → Sponsored Experiences.
 ## Variant 1 — "POV / Discovery" angle
 
 **Headline:** Defend the Crystal!
-**Tagline:** 6 classes · 30+ buildings · co-op bosses
+**Tagline:** 6 classes · 9 defenses · 3 upgrade tiers · co-op bosses
 
 **Why it works:**
 - Action-verb headline ("Defend!") drives kid attention
