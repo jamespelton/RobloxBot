@@ -26,14 +26,26 @@ local CFG = {
 
 	-- [REX] Add, remove or move entries freely. Y is ignored, each planter
 	-- finds its own floor. seed/scale/rotation are optional per entry.
+	-- These four are where the stock lobby plants stood.
 	PLACEMENTS = {
-		{ position = Vector3.new(20, 0, -95) },
-		{ position = Vector3.new(-20, 0, -95) },
-		{ position = Vector3.new(30, 0, -78), scale = 1.15 },
-		{ position = Vector3.new(-30, 0, -78), scale = 1.15 },
+		{ position = Vector3.new(34, 0, -64) },
+		{ position = Vector3.new(34, 0, -90) },
+		{ position = Vector3.new(-34, 0, -64) },
+		{ position = Vector3.new(-34, 0, -90) },
 	},
 
-	DEFAULT_SCALE = 1,
+	-- [REX] the stock plants being replaced are loose Pot/Trunk/Frond parts
+	-- sitting directly in the Lobby model. They are cleared before building,
+	-- which also matters because the floor raycast would otherwise land on an
+	-- old pot lid instead of the actual floor.
+	REMOVE_LEGACY = {
+		path = { "Casino", "Venue", "Lobby" },
+		names = { Pot = true, Trunk = true, Frond = true },
+	},
+
+	-- old pot was 5 wide x 4 tall topping out at 13.4; this palm is 3.9 x 11.1
+	-- at scale 1, so 1.25 matches both the footprint and the height
+	DEFAULT_SCALE = 1.25,
 	DEFAULT_ROTATION = 0,
 	STALKS = 5,
 
@@ -409,6 +421,24 @@ if not folder then
 	folder.Parent = parentFolder
 end
 
+-- [REX] clear the stock plants first, so the floor raycast below lands on the
+-- real floor rather than on top of an old pot
+local removed = 0
+if CFG.REMOVE_LEGACY then
+	local node = workspace
+	for _, step in ipairs(CFG.REMOVE_LEGACY.path) do
+		node = node and node:FindFirstChild(step)
+	end
+	if node then
+		for _, d in ipairs(node:GetDescendants()) do
+			if d:IsA("BasePart") and CFG.REMOVE_LEGACY.names[d.Name] then
+				d:Destroy()
+				removed = removed + 1
+			end
+		end
+	end
+end
+
 -- [REX] the casino floor is not level, so drop a ray and sit on whatever is there
 local rayParams = RaycastParams.new()
 rayParams.FilterType = Enum.RaycastFilterType.Exclude
@@ -445,7 +475,8 @@ for _, spec in ipairs(CFG.PLACEMENTS) do
 	built = built + 1
 end
 
-print(string.format("[PottedPalm] %s | quality=%s | %d planters, %d parts (%d each avg)",
-	folder:GetFullName(), CFG.QUALITY, built, total, built > 0 and math.floor(total / built) or 0))
+print(string.format("[PottedPalm] %s | quality=%s | %d planters, %d parts (%d each avg) | removed %d legacy plant parts",
+	folder:GetFullName(), CFG.QUALITY, built, total,
+	built > 0 and math.floor(total / built) or 0, removed))
 
 return folder
