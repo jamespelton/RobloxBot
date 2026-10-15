@@ -46,6 +46,22 @@ for _, d in ipairs(model:GetDescendants()) do
 	end
 end
 
+-- Spatial queries skip parts with CanQuery = false, and a builder may well set
+-- that on every part for performance. Left alone, every part would read as
+-- floating. Flip it on for the duration and restore it at the end.
+local requery = {}
+for _, d in ipairs(model:GetDescendants()) do
+	if d:IsA("BasePart") and not d.CanQuery then
+		d.CanQuery = true
+		table.insert(requery, d)
+	end
+end
+local function restoreCanQuery()
+	for _, d in ipairs(requery) do
+		d.CanQuery = false
+	end
+end
+
 local overlapParams = OverlapParams.new()
 overlapParams.FilterType = Enum.RaycastFilterType.Include
 overlapParams.FilterDescendantsInstances = { model }
@@ -250,6 +266,8 @@ end
 local parts = collectParts()
 local finalComps = components(parts)
 local floaters = #lonelyParts(parts)
+
+restoreCanQuery()
 
 print(string.format(
 	"[WireUp] %s | cleared=%d wires=%d (orphan sweep %d) rounds=%d | components %d -> %d | floating parts now: %d%s",
