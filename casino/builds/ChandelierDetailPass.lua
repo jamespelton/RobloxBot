@@ -7,8 +7,10 @@
 --
 --   * patina driven by 3D Perlin noise, so tarnish forms contiguous blotches
 --     across neighbouring parts instead of random per-part static
---   * material varies with how tarnished a spot is: Foil on the polished high
---     points, Metal in between, CorrodedMetal down in the sheltered recesses
+--   * material varies with how tarnished a spot is: bright Foil on the
+--     polished high points, dulled Foil through the middle, CorrodedMetal
+--     down in the sheltered recesses. Never plain Metal, which is nearly
+--     featureless at viewing distance.
 --   * crystals get per-drop tint, transparency, frost, tilt and size, so they
 --     look hand-hung rather than stamped out
 --   * cast ornament added: column fluting, acanthus leaves on the arms,
@@ -32,7 +34,7 @@ local CFG = {
 	DustAboveHub   = 0.09, -- extra tarnish up top, where nobody ever dusts
 
 	-- crystal
-	IceChance    = 0.22, -- share of drops that go frosted instead of clear
+	IceChance    = 0.30, -- share of drops that go frosted instead of clear
 	TiltDegrees  = 7,
 	SizeJitter   = 0.06,
 
@@ -145,7 +147,7 @@ end
 
 -- ------------------------------------------------------------- treatments ----
 
-local stats = { gold = 0, crystal = 0, wax = 0, corroded = 0, foil = 0, ice = 0 }
+local stats = { gold = 0, crystal = 0, wax = 0, corroded = 0, foil = 0, cast = 0, ice = 0 }
 
 local function treatGold(p)
 	local base, baseSize, baseCF, baseRefl = baseline(p)
@@ -162,14 +164,27 @@ local function treatGold(p)
 	p.Color = Color3.fromHSV(h, s, v)
 	p.Reflectance = math.clamp(baseRefl * (1 - 0.78 * t), 0, 1)
 
+	-- Never plain Metal. Roblox's Metal is almost featureless at viewing
+	-- distance, which is what made the chain and canopy look like smooth
+	-- plastic tubes. Foil carries a crinkled grain at any reflectance and
+	-- CorrodedMetal is pitted, so the gradient rides on reflectance instead
+	-- of on a material that has nothing to show.
 	if t > CFG.CorrodeAbove then
 		p.Material = Enum.Material.CorrodedMetal
 		stats.corroded = stats.corroded + 1
-	elseif t < CFG.PolishBelow then
+	elseif t > CFG.PolishBelow then
+		p.Material = Enum.Material.Foil
+		p.Reflectance = p.Reflectance * 0.55 -- same grain, duller finish
+		stats.cast = stats.cast + 1
+	else
 		p.Material = Enum.Material.Foil
 		stats.foil = stats.foil + 1
-	else
-		p.Material = Enum.Material.Metal
+	end
+
+	-- a real chain is a run of individually cast links, never a uniform tube
+	if p.Name == "ChainLink" and posHash(p.Position, 5.9) < 0.3 then
+		p.Material = Enum.Material.CorrodedMetal
+		p.Reflectance = p.Reflectance * 0.7
 	end
 
 	-- cast beads were never identical; nudge the loose ones
@@ -364,8 +379,8 @@ if CFG.AddOrnament then
 end
 
 print(string.format(
-	"[DetailPass] %s | gold=%d (foil=%d corroded=%d) crystal=%d (ice=%d) wax=%d | ornament added=%d",
-	model:GetFullName(), stats.gold, stats.foil, stats.corroded, stats.crystal, stats.ice, stats.wax, added
+	"[DetailPass] %s | gold=%d (foil=%d cast=%d corroded=%d) crystal=%d (ice=%d) wax=%d | ornament added=%d",
+	model:GetFullName(), stats.gold, stats.foil, stats.cast, stats.corroded, stats.crystal, stats.ice, stats.wax, added
 ))
 
 return model
