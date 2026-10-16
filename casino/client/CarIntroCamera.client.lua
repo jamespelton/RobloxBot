@@ -12,8 +12,9 @@
 --   3. Phase logging, so a failure says which half stopped talking.
 -- Paired with CarIntroServer, which drives the phases.
 
-local SAFETY_SECONDS = 20 -- [REX] hand control back regardless after this long
-local VERBOSE = true      -- [REX] print each phase as it arrives
+local SAFETY_SECONDS = 20       -- [REX] hand control back regardless after this long
+local LOADING_WAIT_LIMIT = 40   -- [REX] stop waiting on the loading screen after this
+local VERBOSE = true            -- [REX] print each phase as it arrives
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -104,10 +105,24 @@ event.OnClientEvent:Connect(function(phase, model, arrivalCF)
 end)
 
 -- Tell the server we're ready once the loading screen is gone
+-- [REX] Bounded. The original looped on the loading screen with no limit, so
+-- if that screen ever failed to destroy itself the handshake never happened
+-- and the intro silently never ran. Also waits for the character first, since
+-- the server has nothing to seat without one.
 local playerGui = player:WaitForChild("PlayerGui")
+if not player.Character then
+    player.CharacterAdded:Wait()
+end
+
+local started = os.clock()
 task.wait(1)
 while playerGui:FindFirstChild("LoadingScreen") do
+    if os.clock() - started > LOADING_WAIT_LIMIT then
+        warn("[CarIntro] loading screen still up after " .. LOADING_WAIT_LIMIT
+            .. "s, starting the arrival anyway")
+        break
+    end
     task.wait(0.2)
 end
-log("loading screen gone, firing ready")
+log(string.format("firing ready after %.1fs", os.clock() - started))
 event:FireServer("ready")

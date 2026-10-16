@@ -2,22 +2,28 @@
 -- CAR ARRIVAL INTRO (server half)
 --
 -- James wrote the client camera script; this is the other half it talks to.
--- On its own the camera script waits for ReplicatedFirst's loading screen to
--- clear, fires "ready", and then nothing happens: there is no CarIntroEvent and
--- nothing to send it the "drive" / "exit" / "done" phases. This drives them.
 --
 -- Sequence, per player:
---   1. character spawns -> frozen and hidden immediately, so they are never
---      seen standing at the spawn pad before their lift arrives
---   2. client reports "ready" -> a car is cloned from the parked fleet and set
---      down the approach road, with the player seated in it
+--   1. client reports "ready" once its loading screen has cleared
+--   2. the player is hidden and held, a car is cloned from the parked fleet and
+--      set down the approach road with them in it
 --   3. "drive"  -> the car runs up to the entrance canopy and stops
 --   4. "exit"   -> the player is set down at the driver's door and walks clear
 --   5. "done"   -> controls and camera handed back, the car pulls away
 --
+-- Nothing is done to the character until "ready" actually arrives. An earlier
+-- version froze and hid the character the moment it spawned and released it on
+-- a 20 second timer, which was wrong in two ways: the loading screen can take
+-- up to ~27s to clear (MAX_TIME 25 plus its exit animation), so the server gave
+-- up before the client ever reported in and then rejected the handshake; and
+-- any failure in between left the player standing invisible and immobile.
+-- Now, if "ready" never arrives, nothing happens at all and the player simply
+-- plays. The loading screen covers the spawn anyway, so there is nothing to
+-- hide from them in the meantime.
+--
 -- The car is moved by welding every part to its Hitbox and animating that one
 -- part. Moving all ~120 parts each frame would replicate 120 CFrames per frame
--- per player; this replicates one.
+-- per player; this replicates one. (Verified in edit mode.)
 -- =============================================================================
 
 local Players = game:GetService("Players")
@@ -43,13 +49,19 @@ local CFG = {
     -- It pulls forward, away from the canopy, but the facade is at Z -112. At
     -- 20 the nose finishes 2 studs off the wall; 14 leaves 8.
     DepartDistance = 14,
-    ReadyTimeout = 20, -- release the player anyway if the client never reports
     FleetFolder = "ParkedCars",
     -- Cast for the road from BELOW the entrance canopy. The canopy roof sits at
     -- Y 24.5-27.5 directly over the arrival point, so a ray dropped from high up
     -- lands on it and the car arrives thirty studs in the air.
     RayFromHeight = 15,
+    Verbose = true,
 }
+
+local function log(...)
+    if CFG.Verbose then
+        print("[CarIntro/server]", ...)
+    end
+end
 
 local event = ReplicatedStorage:FindFirstChild("CarIntroEvent")
 if not event then
@@ -62,8 +74,6 @@ local casino = workspace:FindFirstChild("Casino")
 local fleet = casino and casino:FindFirstChild(CFG.FleetFolder)
 
 -- ---------------------------------------------------------------- ground ----
--- Ignore spawn pads: the pad at the arrival point stands a stud proud of the
--- road, and a car perched on it looks wrong.
 local function groundAt(x, z)
     local ignore = {}
     for _, d in ipairs(workspace:GetDescendants()) do
@@ -82,9 +92,6 @@ local ARRIVAL = CFrame.new(CFG.ArrivalX, groundAt(CFG.ArrivalX, CFG.ArrivalZ), C
     * CFrame.Angles(0, math.rad(CFG.ArrivalYaw), 0)
 
 -- ------------------------------------------------------------------- car ----
--- Returns the car, and the offset from its ground line to its Hitbox, so the
--- wheels can be put on the road rather than the hitbox centre (a Model with a
--- PrimaryPart pivots on that part, not on its WorldPivot).
 local function makeCar()
     if not fleet then
         return nil
@@ -106,7 +113,6 @@ local function makeCar()
     local cf, size = car:GetBoundingBox()
     local lift = hitbox.Position.Y - (cf.Position.Y - size.Y / 2)
 
-    -- one moving part, everything else welded to it
     for _, p in ipairs(car:GetDescendants()) do
         if p:IsA("BasePart") and p ~= hitbox then
             local weld = Instance.new("WeldConstraint")
@@ -125,13 +131,9 @@ local function makeCar()
 end
 
 -- ----------------------------------------------------------- the sequence ---
-local busy = {}
+local played = {}
 
-local function freeze(character)
-    local hrp = character:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        hrp.Anchored = true
-    end
+local function hide(character)
     for _, d in ipairs(character:GetDescendants()) do
         if d:IsA("BasePart") or d:IsA("Decal") then
             d.Transparency = 1
@@ -149,14 +151,20 @@ local function show(character)
     end
 end
 
-local function thaw(character)
+local function hold(character)
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        hrp.Anchored = true
+    end
+end
+
+local function release(character)
     local hrp = character:FindFirstChild("HumanoidRootPart")
     if hrp then
         hrp.Anchored = false
     end
 end
 
--- animate the car (and optionally the passenger) between two ground CFrames
 local function glide(car, lift, fromCF, toCF, duration, character)
     local hitbox = car.PrimaryPart
     local elapsed = 0
@@ -183,105 +191,80 @@ local function runIntro(player, character)
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     local hrp = character:FindFirstChild("HumanoidRootPart")
     if not (humanoid and hrp) then
-        return
+        return false, "character has no Humanoid or HumanoidRootPart"
     end
 
     local car, lift = makeCar()
     if not car then
-        warn("[CarIntro] no car to clone from " .. CFG.FleetFolder .. "; skipping the intro")
-        return
+        return false, "no car to clone from " .. CFG.FleetFolder
     end
 
-    -- set both down before the camera cuts to them; glide() with a zero
-    -- duration never enters its loop, so place them directly
+    -- only now does the player lose their body; if anything above failed they
+    -- were never touched
+    hide(character)
+    hold(character)
+
     local startCF = ARRIVAL * CFrame.new(0, 0, CFG.Approach)
     car.PrimaryPart.CFrame = startCF * CFrame.new(0, lift, 0)
     hrp.CFrame = startCF * CFrame.new(-1.65, 3.6, 0.6)
 
-    print(string.format("[CarIntro] %s: %s starting at %s", player.Name, car.Name,
-        tostring(car.PrimaryPart.Position)))
+    log(player.Name, "car", car.Name, "set down at", tostring(car.PrimaryPart.Position))
     event:FireClient(player, "drive", car, ARRIVAL)
     glide(car, lift, startCF, ARRIVAL, CFG.DriveTime, character)
     task.wait(CFG.SettleHold)
 
-    -- step out at the driver's door
+    log(player.Name, "arrived, stepping out")
     event:FireClient(player, "exit", car, ARRIVAL)
     local standing = humanoid.HipHeight + hrp.Size.Y / 2
     hrp.CFrame = ARRIVAL * CFrame.new(-5.2, standing, 0.6)
     show(character)
-    thaw(character)
+    release(character)
     humanoid:MoveTo((ARRIVAL * CFrame.new(-5.6, 0, -CFG.WalkAhead)).Position)
     task.wait(CFG.ExitHold)
 
-    event:FireClient(player, "done")
-
-    -- the car pulls away
     task.spawn(function()
         glide(car, lift, ARRIVAL, ARRIVAL * CFrame.new(0, 0, -CFG.DepartDistance), CFG.DepartTime)
         car:Destroy()
     end)
+    return true
 end
 
 -- --------------------------------------------------------------- wiring -----
-local function onCharacter(player, character)
-    character:WaitForChild("HumanoidRootPart")
-    character:WaitForChild("Humanoid")
-    freeze(character)
-    busy[player] = character
-
-    -- if the client never reports in, give the player their body back anyway
-    task.delay(CFG.ReadyTimeout, function()
-        if busy[player] == character then
-            busy[player] = nil
-            show(character)
-            thaw(character)
-            event:FireClient(player, "done")
-        end
-    end)
-end
-
-local function watch(player)
-    player.CharacterAdded:Connect(function(character)
-        onCharacter(player, character)
-    end)
-    if player.Character then
-        task.spawn(onCharacter, player, player.Character)
-    end
-end
-
-Players.PlayerAdded:Connect(watch)
-
--- [REX] Studio fires PlayerAdded before ServerScriptService scripts finish
--- loading, so the local player is routinely already there by the time this runs
--- and PlayerAdded never fires for them. CLAUDE.md documents the same catch-up
--- pattern in PlayerSetup and ClassManager.
-for _, existing in ipairs(Players:GetPlayers()) do
-    watch(existing)
-end
+Players.PlayerRemoving:Connect(function(player)
+    played[player] = nil
+end)
 
 event.OnServerEvent:Connect(function(player, message)
     if message ~= "ready" then
         return
     end
-    local character = busy[player]
-    if not character or not character.Parent then
-        warn("[CarIntro] " .. player.Name .. " reported ready but was never frozen; "
-            .. "the intro is being skipped")
-        return
+    if played[player] then
+        return -- respawns do not replay the intro
     end
-    busy[player] = nil
-    print("[CarIntro] " .. player.Name .. " ready, running the arrival")
+    played[player] = true
+    log(player.Name, "reported ready")
 
-    local ok, err = pcall(runIntro, player, character)
-    if not ok then
-        warn("[CarIntro] " .. tostring(err))
+    local character = player.Character
+    if not character then
+        character = player.CharacterAdded:Wait()
     end
-    -- whatever happened, the player gets their body and camera back
+    character:WaitForChild("HumanoidRootPart", 10)
+    character:WaitForChild("Humanoid", 10)
+
+    local ok, result, reason = pcall(runIntro, player, character)
+    if not ok then
+        warn("[CarIntro] " .. tostring(result))
+    elseif result == false then
+        warn("[CarIntro] skipped: " .. tostring(reason))
+    end
+
+    -- whatever happened, the player ends up visible, mobile and in control
     if character.Parent then
         show(character)
-        thaw(character)
+        release(character)
     end
     event:FireClient(player, "done")
+    log(player.Name, "done")
 end)
 
-print("[CarIntro] ready, arrival at " .. tostring(ARRIVAL.Position))
+log("loaded; arrival at", tostring(ARRIVAL.Position), "| fleet:", fleet and #fleet:GetChildren() or 0, "cars")
