@@ -532,30 +532,60 @@ current = Instance.new("Model")
 current.Name = "InfillStreets"
 current.Parent = folder
 
+-- [REX] Work out which corridors exist BEFORE drawing, so an intersection can
+-- be laid wherever one terminates. The original only squared off a corner when
+-- a block had both an east and a south neighbour, which with scattered blocks
+-- almost never happens: corridors ended in mid-air and the road network was a
+-- pile of disconnected stubs. That is invisible until something tries to drive
+-- on it - CityDataPublisher found 8 usable edges out of 149.
+local ns, ew = {}, {}   -- ns[i,j]: street between column i and i+1, at row j
 local roads = 0
 for i = 0, nx - 1 do
     for j = 0, nz - 1 do
         if built[cellKey(i, j)] then
-            local cx = originX + i * PITCH
-            local cz = originZ + j * PITCH
-            -- a street to the east and to the south where the neighbour exists
             if built[cellKey(i + 1, j)] then
-                local x = cx + PITCH / 2
-                B(x, GY + 0.05, cz, STREET, 0.1, BLOCK, ASPHALT)
-                B(x, GY + 0.11, cz, 0.3, 0.02, BLOCK * 0.8, YELLOW_LINE)
-                roads = roads + 1
+                ns[cellKey(i, j)] = true
             end
             if built[cellKey(i, j + 1)] then
-                local z = cz + PITCH / 2
-                B(cx, GY + 0.05, z, BLOCK, 0.1, STREET, ASPHALT)
-                B(cx, GY + 0.11, z, BLOCK * 0.8, 0.02, 0.3, YELLOW_LINE)
-                roads = roads + 1
+                ew[cellKey(i, j)] = true
             end
-            -- the little square where four streets meet
-            if built[cellKey(i + 1, j)] and built[cellKey(i, j + 1)] then
-                local x, z = cx + PITCH / 2, cz + PITCH / 2
-                B(x, GY + 0.05, z, STREET, 0.1, STREET, ASPHALT)
-                -- zebra crossings on two arms
+        end
+    end
+end
+
+for i = 0, nx - 1 do
+    for j = 0, nz - 1 do
+        local cx = originX + i * PITCH
+        local cz = originZ + j * PITCH
+        if ns[cellKey(i, j)] then
+            local x = cx + PITCH / 2
+            B(x, GY + 0.05, cz, STREET, 0.1, BLOCK, ASPHALT)
+            B(x, GY + 0.11, cz, 0.3, 0.02, BLOCK * 0.8, YELLOW_LINE)
+            roads = roads + 1
+        end
+        if ew[cellKey(i, j)] then
+            local z = cz + PITCH / 2
+            B(cx, GY + 0.05, z, BLOCK, 0.1, STREET, ASPHALT)
+            B(cx, GY + 0.11, z, BLOCK * 0.8, 0.02, 0.3, YELLOW_LINE)
+            roads = roads + 1
+        end
+    end
+end
+
+-- The square where corridors meet. Laid if ANY of the four that touch it
+-- exists, so every corridor ends on tarmac instead of stopping dead.
+local crossings = 0
+for i = -1, nx - 1 do
+    for j = -1, nz - 1 do
+        if ns[cellKey(i, j)] or ns[cellKey(i, j + 1)]
+            or ew[cellKey(i, j)] or ew[cellKey(i + 1, j)] then
+            local x = originX + i * PITCH + PITCH / 2
+            local z = originZ + j * PITCH + PITCH / 2
+            B(x, GY + 0.05, z, STREET, 0.1, STREET, ASPHALT)
+            crossings = crossings + 1
+            -- zebra crossings only where two streets actually cross
+            if (ns[cellKey(i, j)] or ns[cellKey(i, j + 1)])
+                and (ew[cellKey(i, j)] or ew[cellKey(i + 1, j)]) then
                 for k = -2, 2 do
                     B(x + k * 3.2, GY + 0.12, z - STREET / 2 - 2, 1.6, 0.02, 7, WHITE_LINE)
                     B(x - STREET / 2 - 2, GY + 0.12, z + k * 3.2, 7, 0.02, 1.6, WHITE_LINE)
@@ -578,8 +608,8 @@ for _, d in ipairs(folder:GetDescendants()) do
         parts = parts + 1
     end
 end
-print(string.format("[Infill] %d low-rise blocks, %d street segments, %d parts%s",
-    blocks, roads, parts, overBudget and " (stopped at the part budget)" or ""))
+print(string.format("[Infill] %d low-rise blocks, %d streets, %d crossings, %d parts%s",
+    blocks, roads, crossings, parts, overBudget and " (stopped at the part budget)" or ""))
 print(string.format("[Infill] grid %dx%d at %d-stud pitch, heights %d-%d, centre %.0f,%.0f",
     nx, nz, PITCH, MIN_HEIGHT, MAX_HEIGHT, casinoCentre.X, casinoCentre.Z))
 
