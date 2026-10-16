@@ -47,8 +47,13 @@ local V = Vector3.new
 local UP = V(0, 1, 0)
 
 -- [REX] was `local LANE = SW * 0.14`, one lane offset for the whole city
+-- [REX] 26-stud streets have cars parked at the kerb (StreetParkedCars), so
+-- their lanes sit a little closer to the centre line: 0.11 keeps the traffic
+-- clear of the parked cars and still clear of the oncoming lane. The 18-stud
+-- infill streets have no parking and keep 0.14.
 local function laneFor(w)
-    return (w or SW) * 0.14
+    w = w or SW
+    return w * (w >= 24 and 0.11 or 0.14)
 end
 
 if not nodes or #nodes == 0 then
