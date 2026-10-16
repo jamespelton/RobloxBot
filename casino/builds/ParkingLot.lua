@@ -19,7 +19,13 @@
 local POSITION = Vector3.new(0, -2.7, -297) -- [REX] centre of the lot, on the existing pave
 local ROTATION = 0                    -- if the VIP spots/sidewalk face away from the casino, try 180 (or 90 / 270)
 local PARENT_NAME = "Casino"          -- [REX] folder under Workspace; falls back to Workspace
-local SPACES_PER_ROW = 16             -- parking spaces in each row
+local SPACES_PER_ROW = 30             -- [REX] was 16. The lot was 226 wide on a 620-wide
+                                      -- LotPave slab, leaving ~197 studs of bare asphalt on
+                                      -- each side. 30 makes it 364 wide, about 59% of the
+                                      -- pad, so it fills some of the space without swallowing
+                                      -- it. The lamp poles at X +/-230 stay clear; the two at
+                                      -- X +/-150 now fall inside the rows and REMOVE_LEGACY
+                                      -- clears them, which is what that flag is for.
 local BAYS = 2                        -- each bay = 2 rows of spaces with a driving lane between them
 local STALL_WIDTH = 10
 local STALL_DEPTH = 20

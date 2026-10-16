@@ -12,7 +12,9 @@
 -- The car geometry is untouched.
 
 -- Settings:
-local FILL_CHANCE = 0.5            -- chance a normal space has a car (0 to 1)
+local FILL_CHANCE = 0.35           -- [REX] was 0.5. The lot went from 64 spaces to 120, and
+                                   -- at 0.5 that is ~60 cars at ~119 parts each. 0.35 keeps
+                                   -- the lot looking used without undoing the load-time work.
 local VIP_FILL_CHANCE = 0.75       -- chance a VIP space has a car
 local ACCESSIBLE_FILL_CHANCE = 0.3 -- chance an accessible space has a car
 local BACK_IN_CHANCE = 0.2         -- chance a car is backed into its space
