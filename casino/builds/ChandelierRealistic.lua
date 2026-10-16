@@ -1,18 +1,39 @@
 -- REALISTIC CASINO CHANDELIER
--- Written by James. Three changes from the original, each marked [REX] below:
---   1. POSITION / PARENT_NAME set for the Golden Spire casino (ceiling
---      underside is Y=45, lobby statue is at X=0 Z=-78)
---   2. any previous model of the same name is removed before parenting, so
---      re-running replaces the chandelier instead of stacking a second one
---   3. the trailing flicker loop moved into a child Script. Run in edit mode,
+-- Written by James. Changes from the original are each marked [REX]:
+--   1. PLACEMENTS list + buildChandelier(), so one run fits out the whole
+--      venue instead of building a single fixture at a typed position
+--   2. ceiling snap: each spot rays upward and hangs from the real ceiling
+--      underside, which is 44.3 under a coffer and 45.0 elsewhere
+--   3. optional per-placement scale, for the oversized centre fixture
+--   4. REMOVE_LEGACY clears the 8 stock Decor.Chandelier models
+--   5. the trailing flicker loop moved into a child Script. Run in edit mode,
 --      a bare task.spawn loop keeps spinning inside Studio forever and dirties
 --      the place file; as a child Script it runs in game and travels with the
 --      model if you copy it.
--- Everything else is untouched.
+-- The geometry is untouched.
 
 -- Settings:
-local POSITION = Vector3.new(0, 45, -78) -- [REX] ceiling underside, centered on the lobby statue
-local PARENT_NAME = "Casino"             -- [REX] folder under Workspace; falls back to Workspace
+local PARENT_NAME = "Casino"   -- folder under Workspace; falls back to Workspace
+local FOLDER_NAME = "Chandeliers"
+
+-- [REX] every chandelier in the venue. Y is ignored, each one finds its own
+-- ceiling. scale is optional and defaults to 1.
+local PLACEMENTS = {
+    { position = Vector3.new(0, 0, 10), scale = 2.0 }, -- grand centre fixture
+    { position = Vector3.new(0, 0, -78) },             -- lobby, over the statue
+    { position = Vector3.new(0, 0, 72) },
+    { position = Vector3.new(-40, 0, -75) },
+    { position = Vector3.new(40, 0, -75) },
+    { position = Vector3.new(95, 0, 40) },
+    { position = Vector3.new(95, 0, -40) },
+    { position = Vector3.new(-95, 0, 40) },
+    { position = Vector3.new(-95, 0, -40) },
+}
+
+-- [REX] the stock chandeliers being replaced: 8 models all named Chandelier
+-- sitting in Workspace.Casino.Decor, 154 parts each
+local REMOVE_LEGACY = { path = { "Casino", "Decor" }, name = "Chandelier" }
+
 local DROP = 8                          -- how far it hangs down from the ceiling (at least 5)
 local ARMS = 8                          -- candles on the bottom tier
 local UPPER_ARMS = 6                    -- candles on the top tier
@@ -32,8 +53,8 @@ local DARK_STYLE = { Color = BRASS_DARK, Material = Enum.Material.Metal, Reflect
 local CRYSTAL_STYLE = { Color = CRYSTAL, Material = Enum.Material.Glass, Transparency = 0.25, Reflectance = 0.5 }
 local WAX_STYLE = { Color = WAX, Material = Enum.Material.SmoothPlastic }
 
-local model = Instance.new("Model")
-model.Name = "CasinoChandelier"
+-- [REX] reassigned per fixture, so every helper below stays exactly as written
+local model
 
 ----------------------------------------------------------------
 -- Building helpers
@@ -252,6 +273,12 @@ end
 ----------------------------------------------------------------
 -- Build the chandelier
 ----------------------------------------------------------------
+-- [REX] one fixture, built in place at spec.position
+local function buildChandelier(spec)
+local POSITION = spec.position
+model = Instance.new("Model")
+model.Name = "CasinoChandelier"
+
 DROP = math.max(DROP, 5)
 local top = POSITION
 local C = POSITION - Vector3.new(0, DROP, 0)
@@ -361,13 +388,81 @@ end
 ]]
 flicker.Parent = model
 
--- [REX] replace any previous chandelier of the same name instead of stacking
-local parentFolder = workspace:FindFirstChild(PARENT_NAME) or workspace
-local existing = parentFolder:FindFirstChild(model.Name)
-if existing then
-    existing:Destroy()
+-- [REX] Scale about the ceiling mount, so an enlarged fixture stays attached to
+-- the ceiling and grows downward and outward. PrimaryPart has to be cleared
+-- first: a Model with a PrimaryPart ignores WorldPivot entirely and pivots on
+-- that part, which would scale about the bowl and push the mount up through
+-- the roof. It is restored straight after, since Flicker reads PrimaryPart.
+local scale = spec.scale or 1
+if scale ~= 1 then
+    model.PrimaryPart = nil
+    model.WorldPivot = CFrame.new(POSITION)
+    model:ScaleTo(scale)
+    model.PrimaryPart = bowl
 end
-model.Parent = parentFolder
+
+return model
+end
+
+-- ================================================================== run =====
+
+local parentFolder = workspace:FindFirstChild(PARENT_NAME) or workspace
+
+-- [REX] clear the stock chandeliers first, so the ceiling rays below cannot
+-- land on an old fixture instead of the actual ceiling
+local removed = 0
+if REMOVE_LEGACY then
+    local node = workspace
+    for _, step in ipairs(REMOVE_LEGACY.path) do
+        node = node and node:FindFirstChild(step)
+    end
+    if node then
+        for _, child in ipairs(node:GetChildren()) do
+            if child.Name == REMOVE_LEGACY.name then
+                child:Destroy()
+                removed = removed + 1
+            end
+        end
+    end
+end
+
+local oldFolder = parentFolder:FindFirstChild(FOLDER_NAME)
+if oldFolder then
+    oldFolder:Destroy()
+end
+-- the single fixture built before this script grew a PLACEMENTS list
+local stray = parentFolder:FindFirstChild("CasinoChandelier")
+if stray then
+    stray:Destroy()
+end
+
+local folder = Instance.new("Folder")
+folder.Name = FOLDER_NAME
+folder.Parent = parentFolder
+
+-- [REX] the ceiling is 44.3 under a coffer and 45.0 where there is none, so
+-- each fixture finds its own rather than trusting one typed number
+local rayParams = RaycastParams.new()
+rayParams.FilterType = Enum.RaycastFilterType.Exclude
+rayParams.FilterDescendantsInstances = { folder }
+
+local function ceilingAt(x, z)
+    local hit = workspace:Raycast(Vector3.new(x, 20, z), Vector3.new(0, 40, 0), rayParams)
+    return hit and hit.Position.Y or 45
+end
+
+local total = 0
+for _, spec in ipairs(PLACEMENTS) do
+    local p = spec.position
+    local y = ceilingAt(p.X, p.Z)
+    local fixture = buildChandelier({ position = Vector3.new(p.X, y, p.Z), scale = spec.scale })
+    fixture.Parent = folder
+    for _, d in ipairs(fixture:GetDescendants()) do
+        if d:IsA("BasePart") then
+            total = total + 1
+        end
+    end
+end
 
 -- Soft glow on bright things (flames, crystals)
 if ADD_GLOW then
@@ -381,4 +476,7 @@ if ADD_GLOW then
     end
 end
 
-return model
+print(string.format("[Chandelier] %s | %d fixtures, %d parts | removed %d legacy chandeliers",
+    folder:GetFullName(), #PLACEMENTS, total, removed))
+
+return folder

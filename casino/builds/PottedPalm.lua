@@ -26,12 +26,20 @@ local CFG = {
 
 	-- [REX] Add, remove or move entries freely. Y is ignored, each planter
 	-- finds its own floor. seed/scale/rotation are optional per entry.
-	-- These four are where the stock lobby plants stood.
+	-- Every spot was probed for a clear 5x10x5 volume above the floor before
+	-- being used, so none of these land on a table, stool or rail.
 	PLACEMENTS = {
+		-- lobby, where the stock plants stood, flanking the entrance axis
 		{ position = Vector3.new(34, 0, -64) },
 		{ position = Vector3.new(34, 0, -90) },
 		{ position = Vector3.new(-34, 0, -64) },
 		{ position = Vector3.new(-34, 0, -90) },
+		-- bookending the bar, which runs X -55..56 at Z 78..94
+		{ position = Vector3.new(65, 0, 86), scale = 1 },
+		{ position = Vector3.new(-65, 0, 86), scale = 1 },
+		-- on the approaches to the VIP lounge (X 94..138) and cashier (X -137..-99)
+		{ position = Vector3.new(90, 0, 60), scale = 1 },
+		{ position = Vector3.new(-90, 0, 60), scale = 1 },
 	},
 
 	-- [REX] the stock plants being replaced are loose Pot/Trunk/Frond parts
