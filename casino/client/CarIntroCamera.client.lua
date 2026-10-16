@@ -1,20 +1,38 @@
 -- CAR ARRIVAL INTRO CAMERA (LocalScript in StarterPlayer > StarterPlayerScripts)
--- Written by James. One change, marked [REX]: a safety release. The camera and
--- controls are handed over on "drive" and only given back on "done", so if the
--- server errors or the sequence is interrupted the player is left with no
--- controls and a frozen camera, with no way out but rejoining.
+-- Written by James. Changes marked [REX]:
+--   1. workspace.CurrentCamera is read at the moment of use, never cached.
+--      This script runs from StarterPlayerScripts before the character exists,
+--      and Roblox swaps CurrentCamera out when the character loads. Caching it
+--      meant every CFrame write landed on an orphaned camera: the car drove up
+--      and the player stepped out, but the view never moved, so the whole
+--      sequence was invisible from the player's seat.
+--   2. A safety release. Controls and camera are taken on "drive" and only
+--      given back on "done", so a server error left the player with no
+--      controls and a frozen camera.
+--   3. Phase logging, so a failure says which half stopped talking.
 -- Paired with CarIntroServer, which drives the phases.
 
 local SAFETY_SECONDS = 20 -- [REX] hand control back regardless after this long
+local VERBOSE = true      -- [REX] print each phase as it arrives
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
-local camera = workspace.CurrentCamera
 local event = ReplicatedStorage:WaitForChild("CarIntroEvent")
 local controls = require(player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule")):GetControls()
+
+-- [REX] never hold on to the camera, ask for it each time
+local function cam()
+    return workspace.CurrentCamera
+end
+
+local function log(...)
+    if VERBOSE then
+        print("[CarIntro/client]", ...)
+    end
+end
 
 local shot = nil
 local carModel, arrival
@@ -32,11 +50,13 @@ end
 local function restore()
     shot = nil
     controls:Enable()
+    local camera = cam()
     camera.CameraType = Enum.CameraType.Custom
     local character = player.Character
     if character then
         camera.CameraSubject = character:FindFirstChildOfClass("Humanoid")
     end
+    log("camera released")
 end
 
 RunService:BindToRenderStep("CarIntroCamera", Enum.RenderPriority.Camera.Value + 1, function()
@@ -51,6 +71,7 @@ RunService:BindToRenderStep("CarIntroCamera", Enum.RenderPriority.Camera.Value +
         return
     end
 
+    local camera = cam()
     local t = os.clock() - shotStart
     if shot == "drive" then
         -- Low shot from the front corner, following the car as it pulls up
@@ -66,6 +87,7 @@ RunService:BindToRenderStep("CarIntroCamera", Enum.RenderPriority.Camera.Value +
 end)
 
 event.OnClientEvent:Connect(function(phase, model, arrivalCF)
+    log("phase:", phase)
     if phase == "drive" or phase == "exit" then
         carModel = model
         arrival = arrivalCF
@@ -75,7 +97,7 @@ event.OnClientEvent:Connect(function(phase, model, arrivalCF)
         shot = phase
         shotStart = os.clock()
         controls:Disable()
-        camera.CameraType = Enum.CameraType.Scriptable
+        cam().CameraType = Enum.CameraType.Scriptable
     elseif phase == "done" then
         restore()
     end
@@ -87,4 +109,5 @@ task.wait(1)
 while playerGui:FindFirstChild("LoadingScreen") do
     task.wait(0.2)
 end
+log("loading screen gone, firing ready")
 event:FireServer("ready")

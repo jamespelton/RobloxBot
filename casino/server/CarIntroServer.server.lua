@@ -198,6 +198,8 @@ local function runIntro(player, character)
     car.PrimaryPart.CFrame = startCF * CFrame.new(0, lift, 0)
     hrp.CFrame = startCF * CFrame.new(-1.65, 3.6, 0.6)
 
+    print(string.format("[CarIntro] %s: %s starting at %s", player.Name, car.Name,
+        tostring(car.PrimaryPart.Position)))
     event:FireClient(player, "drive", car, ARRIVAL)
     glide(car, lift, startCF, ARRIVAL, CFG.DriveTime, character)
     task.wait(CFG.SettleHold)
@@ -238,14 +240,24 @@ local function onCharacter(player, character)
     end)
 end
 
-Players.PlayerAdded:Connect(function(player)
+local function watch(player)
     player.CharacterAdded:Connect(function(character)
         onCharacter(player, character)
     end)
     if player.Character then
-        onCharacter(player, player.Character)
+        task.spawn(onCharacter, player, player.Character)
     end
-end)
+end
+
+Players.PlayerAdded:Connect(watch)
+
+-- [REX] Studio fires PlayerAdded before ServerScriptService scripts finish
+-- loading, so the local player is routinely already there by the time this runs
+-- and PlayerAdded never fires for them. CLAUDE.md documents the same catch-up
+-- pattern in PlayerSetup and ClassManager.
+for _, existing in ipairs(Players:GetPlayers()) do
+    watch(existing)
+end
 
 event.OnServerEvent:Connect(function(player, message)
     if message ~= "ready" then
@@ -253,9 +265,12 @@ event.OnServerEvent:Connect(function(player, message)
     end
     local character = busy[player]
     if not character or not character.Parent then
+        warn("[CarIntro] " .. player.Name .. " reported ready but was never frozen; "
+            .. "the intro is being skipped")
         return
     end
     busy[player] = nil
+    print("[CarIntro] " .. player.Name .. " ready, running the arrival")
 
     local ok, err = pcall(runIntro, player, character)
     if not ok then
