@@ -23,6 +23,9 @@
 --   4. BACK WALL OUT OF PLACE. The north wall had been dragged 10.5 studs
 --      back, leaving a gap to the outside. It goes back in line with the
 --      side walls.
+--   5. A COLUMN OUT OF PLACE. The column at the lobby end had been dragged
+--      41 studs up into the ceiling, leaving its gold rings floating around
+--      an empty base. Columns off the shared height and grid go back.
 
 local CFG = {
     STOOL_RADIUS = 1.6,   -- parts this close to a seat (sideways) belong to its stool
@@ -230,7 +233,13 @@ local desksFixed = 0
 local venue = casino:FindFirstChild("Venue")
 local lobby = venue and venue:FindFirstChild("Lobby")
 local decor = casino:FindFirstChild("Decor")
-if lobby and decor then
+-- (a function, because step 5 may move a column and then the desks are
+-- sized again against where it really stands)
+local function sizeDesks()
+    desksFixed = 0
+    if not (lobby and decor) then
+        return
+    end
     local columnParts = {}
     for _, col in ipairs(decor:GetChildren()) do
         if col.Name == "Column" then
@@ -296,6 +305,7 @@ if lobby and decor then
         end
     end
 end
+sizeDesks()
 print(string.format("[TidyUp] 3. %d lobby desk(s) sized to clear the columns", desksFixed))
 
 ----------------------------------------------------------------
@@ -318,4 +328,58 @@ if wallN and wallE and wallW then
     else
         print("[TidyUp] 4. back wall already in line")
     end
+end
+
+----------------------------------------------------------------
+-- 5. Columns back on the grid
+----------------------------------------------------------------
+-- The column at the lobby end, (58, -70), turned up 41 studs in the air
+-- and 3 studs off its spot, the whole model moved in one piece; only its gold
+-- trim rings from the interior pass were left behind. Every column is
+-- checked against the others: they share one height, and stand on a grid of
+-- X and Z positions. Any column off that grid is moved back onto it.
+local columns = {}
+if decor then
+    for _, col in ipairs(decor:GetChildren()) do
+        local shaft = col.Name == "Column" and col:FindFirstChild("Shaft", true)
+        if shaft then
+            table.insert(columns, { model = col, shaft = shaft })
+        end
+    end
+end
+local function snap(value, choices)
+    local best
+    for _, c in ipairs(choices) do
+        if not best or math.abs(c - value) < math.abs(best - value) then
+            best = c
+        end
+    end
+    return best or value
+end
+local columnsFixed = 0
+for _, c in ipairs(columns) do
+    -- the height, Xs and Zs the OTHER columns agree on
+    local ys, xs, zs = {}, {}, {}
+    for _, o in ipairs(columns) do
+        if o ~= c then
+            table.insert(ys, o.shaft.Position.Y)
+            table.insert(xs, o.shaft.Position.X)
+            table.insert(zs, o.shaft.Position.Z)
+        end
+    end
+    table.sort(ys)
+    local y = ys[math.ceil(#ys / 2)]
+    local p = c.shaft.Position
+    local want = V(snap(p.X, xs), y or p.Y, snap(p.Z, zs))
+    if (want - p).Magnitude > 0.05 then
+        print(string.format("[TidyUp] 5. column moved from (%.1f, %.1f, %.1f) back to (%.1f, %.1f, %.1f)", p.X, p.Y, p.Z, want.X, want.Y, want.Z))
+        c.model:PivotTo(c.model:GetPivot() + (want - p))
+        columnsFixed += 1
+    end
+end
+if columnsFixed == 0 then
+    print("[TidyUp] 5. all columns on the grid")
+else
+    sizeDesks()
+    print(string.format("[TidyUp] 5. desks re-sized against the moved column(s): %d clear of a column", desksFixed))
 end
