@@ -185,7 +185,11 @@ end
 
 local function signPost(ground, faceDirection, panelColor, text, textColor)
     box(ground + Vector3.new(0, 3.5, 0), Vector3.new(0.25, 7, 0.25), POLE_STYLE)
-    local panelPos = ground + Vector3.new(0, 6.2, 0)
+    -- [REX] Mount the panel on the FRONT of the post. Centred on it, the 0.25
+    -- deep post stuck 0.05 studs out through the 0.15 deep panel and drew a
+    -- dark bar straight down the middle of the caption. 0.2 puts the panel's
+    -- back flush against the post's front face.
+    local panelPos = ground + Vector3.new(0, 6.2, 0) + faceDirection * 0.2
     local panel = styled({
         Size = Vector3.new(2.6, 2.2, 0.15),
         CFrame = CFrame.lookAt(panelPos, panelPos + faceDirection),
