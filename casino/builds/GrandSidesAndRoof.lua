@@ -24,6 +24,11 @@ local CASINO_NAME = "GOLDEN SPIRE"
 -- longer advertises three ways in when only one of them opens. Set it true to
 -- put them back; the two labels below are only used when it is.
 local SIDE_ENTRANCES = false
+-- [REX] Only the front carries the name. With PAVILION_SIGNS false the side
+-- and back pavilions lose their lit GOLDEN SPIRE board and its bulb surround,
+-- leaving plain stone under the crown, so the one on the front entrance is the
+-- only place the casino names itself.
+local PAVILION_SIGNS = false
 local LEFT_LABEL = "HOTEL ENTRANCE"   -- sign over one side entrance
 local RIGHT_LABEL = "EVENT CENTER"    -- sign over the other side entrance
 local AUTO_DETECT = true
@@ -436,9 +441,11 @@ local function pavilion(T, pav)
     archedWindow(T, 0, pw - 8, windowBottom, ph - 10, -3.55)
 
     -- Lit sign with chasing bulbs
-    box(T * CF(0, ph - 6.3, -3.75), Vector3.new(pw - 6, 3.6, 0.5), GRANITE)
-    textPanel(T * CF(0, ph - 6.3, -4.02), pw - 8, 2.8, pav.sign)
-    bulbRect(T, ph - 6.3, -4.1, pw - 5.4, 4.4, 1.1)
+    if pav.sign then
+        box(T * CF(0, ph - 6.3, -3.75), Vector3.new(pw - 6, 3.6, 0.5), GRANITE)
+        textPanel(T * CF(0, ph - 6.3, -4.02), pw - 8, 2.8, pav.sign)
+        bulbRect(T, ph - 6.3, -4.1, pw - 5.4, 4.4, 1.1)
+    end
 
     -- Stepped crown with a spire
     box(T * CF(0, ph - 1.2, -1.75), Vector3.new(pw + 1.6, 1.6, 5.2), STONE_DARK)
@@ -576,7 +583,8 @@ for _, sign in ipairs({ -1, 1 }) do
     local T = faceFrame(Vector3.new(sign * W / 2, 0, D / 2), Vector3.new(sign, 0, 0))
     local pav = nil
     if sideLength >= sidePavilionWidth + 24 then
-        pav = { width = sidePavilionWidth, extra = 6, sign = CASINO_NAME,
+        pav = { width = sidePavilionWidth, extra = 6,
+            sign = PAVILION_SIGNS and CASINO_NAME or nil,
             doors = SIDE_ENTRANCES, label = sign < 0 and LEFT_LABEL or RIGHT_LABEL }
     end
     facadeWall(T, sideLength, sideLength / 2, pav)
@@ -584,7 +592,8 @@ end
 
 local backT = faceFrame(Vector3.new(0, 0, D), Vector3.new(0, 0, 1))
 local backBayHalf = W / 2 - 12
-local backPav = { width = math.clamp(W * 0.25, 26, 40), extra = 10, sign = CASINO_NAME, doors = false }
+local backPav = { width = math.clamp(W * 0.25, 26, 40), extra = 10,
+    sign = PAVILION_SIGNS and CASINO_NAME or nil, doors = false }
 facadeWall(backT, W - 20, backBayHalf, backBayHalf * 2 >= backPav.width + 20 and backPav or nil)
 
 ----------------------------------------------------------------
