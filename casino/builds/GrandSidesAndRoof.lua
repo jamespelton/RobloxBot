@@ -18,6 +18,12 @@
 
 -- Settings:
 local CASINO_NAME = "GOLDEN SPIRE"
+-- [REX] The front is the only entrance. With SIDE_ENTRANCES false the side
+-- pavilions keep their shape - projecting tower, arched window, GOLDEN SPIRE
+-- sign - but lose the glass doors and the lit marquee, so the building no
+-- longer advertises three ways in when only one of them opens. Set it true to
+-- put them back; the two labels below are only used when it is.
+local SIDE_ENTRANCES = false
 local LEFT_LABEL = "HOTEL ENTRANCE"   -- sign over one side entrance
 local RIGHT_LABEL = "EVENT CENTER"    -- sign over the other side entrance
 local AUTO_DETECT = true
@@ -570,7 +576,8 @@ for _, sign in ipairs({ -1, 1 }) do
     local T = faceFrame(Vector3.new(sign * W / 2, 0, D / 2), Vector3.new(sign, 0, 0))
     local pav = nil
     if sideLength >= sidePavilionWidth + 24 then
-        pav = { width = sidePavilionWidth, extra = 6, sign = CASINO_NAME, doors = true, label = sign < 0 and LEFT_LABEL or RIGHT_LABEL }
+        pav = { width = sidePavilionWidth, extra = 6, sign = CASINO_NAME,
+            doors = SIDE_ENTRANCES, label = sign < 0 and LEFT_LABEL or RIGHT_LABEL }
     end
     facadeWall(T, sideLength, sideLength / 2, pav)
 end
