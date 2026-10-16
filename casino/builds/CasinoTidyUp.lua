@@ -20,6 +20,9 @@
 --      studs long and their outer ends ran about 4.5 studs into a column.
 --      They are shortened evenly, staying centred under their signs, to clear
 --      the column by 0.3.
+--   4. BACK WALL OUT OF PLACE. The north wall had been dragged 10.5 studs
+--      back, leaving a gap to the outside. It goes back in line with the
+--      side walls.
 
 local CFG = {
     STOOL_RADIUS = 1.6,   -- parts this close to a seat (sideways) belong to its stool
@@ -294,3 +297,25 @@ if lobby and decor then
     end
 end
 print(string.format("[TidyUp] 3. %d lobby desk(s) sized to clear the columns", desksFixed))
+
+----------------------------------------------------------------
+-- 4. Back wall in line with the side walls
+----------------------------------------------------------------
+-- During the 16 Oct session Shell.WallN turned up at (8.5, 21.0, 110.5):
+-- 10.5 studs behind where the side walls end, 8.5 to one side and 1.5 below
+-- the floor line, leaving a gap open to the outside at the back of the
+-- casino. It goes back to centre, level with the side walls, meeting their
+-- ends the same way the front wall does.
+local shell = casino:FindFirstChild("Shell")
+local wallN = shell and shell:FindFirstChild("WallN")
+local wallE, wallW = shell and shell:FindFirstChild("WallE"), shell and shell:FindFirstChild("WallW")
+if wallN and wallE and wallW then
+    local want = V((wallE.Position.X + wallW.Position.X) / 2, wallE.Position.Y, wallE.Position.Z + wallE.Size.Z / 2)
+    if (wallN.Position - want).Magnitude > 0.01 then
+        print(string.format("[TidyUp] 4. back wall moved from (%.1f, %.1f, %.1f) back to (%.1f, %.1f, %.1f)",
+            wallN.Position.X, wallN.Position.Y, wallN.Position.Z, want.X, want.Y, want.Z))
+        wallN.CFrame = CFrame.new(want) * wallN.CFrame.Rotation
+    else
+        print("[TidyUp] 4. back wall already in line")
+    end
+end
