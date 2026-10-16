@@ -41,6 +41,7 @@
 -- Settings:
 local DETAIL = "high"      -- "high" or "low" (low = about half the parts, less lag)
 local SITTABLE = true
+local BACKREST = false     -- backrest on the slot stools
 local LEATHER_COLOR = Color3.fromRGB(140, 15, 25)
 local LEVER_ROOM = 1.0     -- [REX] gap kept between neighbouring cabinets for the lever
 
@@ -400,22 +401,24 @@ local function buildStool(base, h)
     for _, offset in ipairs(high and { V(0, 0, 0), V(0.55, 0, 0), V(-0.55, 0, 0) } or { V(0, 0, 0) }) do
         ball(base * (V(0, h + 0.01, 0) + offset), 0.15, GOLD)
     end
-    -- Low curved backrest
-    local R, backH = 1.05, 1.5
-    local center = base * V(0, h + backH / 2, 0)
-    for _, deg in ipairs({ -45, 0, 45 }) do
-        local a = math.rad(deg)
-        local p = base * V(math.sin(a) * R, h - 0.1 + backH / 2, math.cos(a) * R)
-        box(CFrame.lookAt(p, V(center.X, p.Y, center.Z)), V(0.85, backH, 0.3), LEATHER).CanCollide = true
-    end
-    local prev
-    for i = 0, 4 do
-        local a = math.rad(-65 + 130 * i / 4)
-        local point = base * V(math.sin(a) * R, h - 0.1 + backH, math.cos(a) * R)
-        if prev then
-            rod(prev, point, 0.18, GOLD)
+    -- Low curved backrest (James asked for these off; BACKREST = true brings them back)
+    if BACKREST then
+        local R, backH = 1.05, 1.5
+        local center = base * V(0, h + backH / 2, 0)
+        for _, deg in ipairs({ -45, 0, 45 }) do
+            local a = math.rad(deg)
+            local p = base * V(math.sin(a) * R, h - 0.1 + backH / 2, math.cos(a) * R)
+            box(CFrame.lookAt(p, V(center.X, p.Y, center.Z)), V(0.85, backH, 0.3), LEATHER).CanCollide = true
         end
-        prev = point
+        local prev
+        for i = 0, 4 do
+            local a = math.rad(-65 + 130 * i / 4)
+            local point = base * V(math.sin(a) * R, h - 0.1 + backH, math.cos(a) * R)
+            if prev then
+                rod(prev, point, 0.18, GOLD)
+            end
+            prev = point
+        end
     end
 end
 
