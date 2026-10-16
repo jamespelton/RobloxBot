@@ -1,62 +1,59 @@
 {
   "bot": "Rex (Roblox)",
-  "last_updated": "2026-08-19T18:05:00-05:00",
-  "updated_at": "2026-08-19T18:05:00-05:00",
+  "last_updated": "2026-10-15T00:00:00-05:00",
+  "updated_at": "2026-10-15T00:00:00-05:00",
   "status": "healthy",
-  "summary": "Casino is now playable: slots, blackjack, roulette, chips currency, E-to-interact",
-  "urgent": [
-    "Place is STILL UNSAVED (Place1, placeId 0). It now holds ~38KB of game logic as well as the build. Script sources are committed under casino/ and geometry under build-library/, but the imported union/decal models cannot be rebuilt from either. File > Save to File As."
-  ],
+  "summary": "Casino venue built out: rooftop, city skyline, interior, traffic, chairs, roulette tables",
+  "urgent": [],
   "needs_james": [
-    "SAVE THE PLACE.",
-    "Playtest the games. Rex verified wiring and math numerically but could NOT verify in-game: playtest log capture returned no output and capture_screenshot times out at this part count. Nobody has actually watched a reel spin yet.",
-    "Publish the place if you want chips to persist - DataStore is wired but inert until then, so balances reset every session.",
-    "Poker and craps tables are still decoration; say the word and Rex will wire them up too.",
-    "Decide whether the casino is its own game or a venue inside an existing game."
+    "PLAYTEST. Nothing this session was verified in-game - playtest log capture still returns nothing and screenshots come back black, so everything was verified by querying coordinates instead. Specifically worth watching: whether loading actually feels faster now StreamingEnabled is on, whether city traffic and pedestrians animate, and whether the roulette wheel still visibly spins when you bet.",
+    "Lighting.Technology is not readable from the plugin sandbox. If it is set to Future, switch it to ShadowMap in the Properties panel - likely the single biggest remaining FPS win.",
+    "StreamingMinRadius / StreamingTargetRadius are not scriptable in this Studio build. They are on Roblox defaults; tune them in the Workspace Properties panel if streaming pops in too late.",
+    "The car-arrival intro is still disabled. Its arrival point (24, -142) is now underneath the GrandExterior canopy column and needs re-siting before it can be switched back on.",
+    "Poker and craps tables are still decoration only; say the word and Rex will wire them up."
   ],
   "needs_james_carried_over": {
-    "note": "Open items from earlier sessions that Rex could not verify this session \u00e2\u20ac\u201d this session used a different, blank place. Clear them if already done.",
+    "note": "Open items from earlier sessions on other games. Clear them if already done.",
     "items": [
       "Crystal Siege: verify dead trees plant flush after the next desert vote (raycast-up grounding fix shipped 2026-04-27)",
       "Crystal Siege: when ready, File > Publish to Roblox so the latest build is live",
-      "Vehicle Tycoon: playtest Rare Boat \u00e2\u20ac\u201d if it drives sideways/backwards, tell Rex which way it faces and we'll set facingOffset (currently CFrame.new())"
+      "Vehicle Tycoon: playtest Rare Boat - if it drives sideways/backwards, tell Rex which way it faces and we'll set facingOffset"
     ]
   },
   "metrics": {
-    "scripts_modified": 0,
-    "studio_changes": 11,
-    "game": "Golden Spire Casino (new, standalone)",
+    "game": "Golden Spire Casino",
     "game_status": "playable",
-    "part_count": 14757,
-    "light_count": 156,
-    "collidable_parts": 1793,
-    "slot_machines": 112,
-    "blackjack_tables": 6,
-    "seats": 215,
-    "playable_slot_machines": 112,
-    "playable_blackjack_tables": 6,
-    "playable_roulette_tables": 2,
-    "scripts": 4,
-    "script_bytes": 38144,
-    "slots_rtp_pct": 91.3,
-    "roulette_rtp_pct": 97.0
+    "place_id": 122795953403412,
+    "part_count": 64199,
+    "shadow_casting_parts": 3303,
+    "light_count": 678,
+    "streaming_enabled": true,
+    "city_blocks_towers": 38,
+    "city_blocks_lowrise": 53,
+    "road_nodes": 114,
+    "road_edges": 165,
+    "parking_spaces": 120,
+    "parked_cars": 40,
+    "luxury_chairs": 60,
+    "roulette_tables_rebuilt": 2
   },
   "session_changes": [
-    "Built a chips economy: leaderstats Chips, 500 starting balance, DataStore persistence guarded by pcall so it activates on publish and no-ops until then",
-    "CasinoCore exposes _G.CasinoBank with a single authoritative tryDeduct path - bets are never taken from client input",
-    "SlotService: ProximityPrompt (E) on all 112 machines. Drives the asset's own 3 reel cylinders by attaching a SurfaceGui to the same face as each existing Decal, which guarantees it faces the player without hardcoding an orientation. Staggered reel stops at 0.90/1.30/1.75s, lever pull animation via CFrame.fromAxisAngle about the lever base, LED flash, and a BillboardGui showing the win",
-    "Slot paytable: 6 symbols weighted 30/25/18/13/9/5 paying 8x-225x for three of a kind plus consolation pairs. Simulated 300,000 spins: 91.3% RTP, 26.9% hit rate, 38x+ about 1 in 328",
-    "TableGames blackjack on all 6 imported tables: 6-deck shoe reshuffled below 60 cards, dealer stands on all 17, blackjack pays 3:2, double on first two cards. Ace demotion unit-tested 8/8 including two-aces, five-card-ace and hard-bust cases",
-    "TableGames roulette on both wheels: single zero, red/black/odd/even pay 2x and green pays 36x. Physically spins the model's Wheel/Pocket/Hub/Ball parts for 3.2s with an ease-out before revealing. Simulated RTP ~97% across all bet types, matching the 2.7% single-zero house edge",
-    "Cashier desk prompt grants 250 chips on a 2 minute cooldown, waived at zero so a player can never be stranded",
-    "CasinoClient: chips HUD with a 5-step bet selector, toast notifications, full blackjack panel with rendered cards and suit glyphs, roulette betting panel. Palette matched to the desaturated room",
-    "Verified against the real world state: 112/112 machines rig-ready, reel parts sort to 3 distinct ordered positions, 6 blackjack tables wireable, roulette centre and 21 moving parts found, cashier counter present, 0 leftover artefacts in edit mode",
-    "Committed all 4 script sources under casino/ with a README covering install locations, required RemoteEvents, world-object dependencies, measured house edge and known gaps. Byte lengths verified against Studio (4418/9497/10805/13424)"
+    "GrandRooftop: 2,530-part rooftop deck - pool, cabanas, sky bar, hot tub, glass dome, helipad, mechanical yard, garden terrace. Fixed its measure-then-delete ordering (it measured the roof from parts its own sweep removed), moved the blinker loop to a child script, and hung the string lights on a real cable instead of leaving the bulbs floating.",
+    "CitySkyline: 38 tower blocks ringing the venue. Ground detection was rewritten - the original would have errored out, and the naive fix would have built the city on the casino roof. Grew the ground plate 900x800 -> 1800x1400 to make room (original size stashed as attributes on the part).",
+    "CityPerformance: StreamingEnabled on (was off, so all ~49k parts replicated before the player could move), shadow casters cut 35,951 -> 3,303, all light shadow maps off, city blocks set to Atomic streaming.",
+    "CityInfill: 53 low-rise blocks filling the bare ~255-stud ring around the casino, so the venue sits in the city rather than beside it. Measured first that shrinking CASINO_GAP could not do this - 40 to 0 only moved 38 blocks to 42.",
+    "Parking lot widened 226 -> 366 studs (64 -> 120 spaces) to fill more of the 620-wide apron; cars 29 -> 40.",
+    "GrandInterior: coffered ceiling, 58 wall panels, 10 column treatments, floor inlay. Its floor detection was 47 studs out - it found the top of the ceiling slab, so the whole script would have decorated the attic.",
+    "CityDataPublisher + CityTraffic: 30 cars and 60 pedestrians. The traffic script depended on ReplicatedStorage.CityData, which nothing created, so it would have waited 180s and silently returned. Also fixed a cached CurrentCamera and ~870 parts heaped at the origin.",
+    "LuxuryChairs: 72 chairs at the game tables. The original would have built 360 (one per part, not per chair) and seated players on their side.",
+    "LuxuryRoulette: both roulette tables rebuilt. The original hid the parts TableGames.spinWheel rotates, so the wheel would have spun invisibly - added a WheelMirror that copies the rotation onto the new rotor, verified exact to 0.00000 rad."
   ],
   "notes": [
-    "capture_screenshot times out at this part count; playtest log capture also returned nothing this session. Both visual and runtime verification are currently unavailable - fall back to querying world state and simulating logic in edit mode.",
-    "get_script_analysis DOES work and caught nothing after the final edits; use it as the syntax gate.",
-    "Free-model audit habit: the imported slot machine carried three 13KB scripts nested inside a Decal. Scanned clean, but always check before cloning an asset en masse."
+    "Verification pattern that works here: query coordinates, never screenshots (they come back black) and never playtest logs (capture returns nothing). Rotation-aware AABBs matter - naive Position +/- Size/2 is badly wrong for rotated cylinders and has produced false alarms twice.",
+    "Build scripts live in casino/builds/, client in casino/client/, server in casino/server/. All are idempotent and were run twice to prove it.",
+    "set_script_source tops out around 22KB; larger scripts are pasted in two parts using a --@@SPLIT@@ marker.",
+    "Bash heredocs in this environment choke on large Lua payloads (apostrophes break the quoting). Use the Write tool for whole files and Python inline for surgical patches.",
+    "Two pre-existing modelling bugs found and reported: poker and roulette chair backs were on the table side, so those chairs already faced away from their own table; and four WallSign neons were stacked back-to-front behind the wall."
   ],
-  "next_run_needed": "2026-08-20"
+  "next_run_needed": "2026-10-16"
 }
