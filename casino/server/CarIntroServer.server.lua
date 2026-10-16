@@ -31,29 +31,31 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local CFG = {
-    -- Offset clear of the spawn pad. CasinoSpawn is a visible 24x24 slab at
-    -- (0,-140) whose top stands a stud above the road, so a car centred there
-    -- has the bottom of its wheels buried in it.
-    ArrivalX = 24,
-    ArrivalZ = -142,   -- under the entrance canopy, beside the spawn pad
-    ArrivalYaw = 180,  -- car faces the casino, having driven up from the lot
-    -- Keep the whole approach on the Drive (Z -215..-105). Starting further
-    -- back runs the car through the parking lot, over wheel stops and parked
-    -- cars: a probe at Z -242 comes back at Y 3.80 instead of road level.
-    Approach = 65,
+    -- 16 Oct: moved into the drop-off lane of the grand exterior's driveway.
+    -- The exterior, built after this intro, put a curb-and-grass strip and a
+    -- canopy post on the old arrival point (24, -142), and a canopy ceiling at
+    -- Y 13.5 over it, so the old ray landed on the canopy and the car would
+    -- have arrived 16 studs in the air, inside a post. The lane runs along the
+    -- front of the casino between the sidewalk curb (Z -127.5) and the grass
+    -- strip (Z -139.5); the car now drives west along it, under the canopy,
+    -- and stops just east of the spawn pad (X -12..12) and clear of the
+    -- canopy posts at X 24.5.
+    ArrivalX = 20,
+    ArrivalZ = -133.5, -- middle of the drop-off lane
+    ArrivalYaw = 90,   -- heading west (-X) along the lane; the driver's door faces the casino
+    Approach = 65,     -- starts at X 85, in the same lane
     DriveTime = 4.0,
     SettleHold = 0.5,
     ExitHold = 3.0,
-    WalkAhead = 11,
+    -- after stepping out, walk up onto the sidewalk toward the revolving door
+    WalkTo = Vector3.new(14, 0, -121),
     DepartTime = 3.0,
-    -- It pulls forward, away from the canopy, but the facade is at Z -112. At
-    -- 20 the nose finishes 2 studs off the wall; 14 leaves 8.
-    DepartDistance = 14,
+    -- pulls away west down the lane before it disappears
+    DepartDistance = 60,
     FleetFolder = "ParkedCars",
-    -- Cast for the road from BELOW the entrance canopy. The canopy roof sits at
-    -- Y 24.5-27.5 directly over the arrival point, so a ray dropped from high up
-    -- lands on it and the car arrives thirty studs in the air.
-    RayFromHeight = 15,
+    -- Cast for the road from below the canopy ceiling (Y 13.4) so the ray
+    -- lands on the asphalt, not the canopy.
+    RayFromHeight = 5,
     Verbose = true,
 }
 
@@ -219,7 +221,7 @@ local function runIntro(player, character)
     hrp.CFrame = ARRIVAL * CFrame.new(-5.2, standing, 0.6)
     show(character)
     release(character)
-    humanoid:MoveTo((ARRIVAL * CFrame.new(-5.6, 0, -CFG.WalkAhead)).Position)
+    humanoid:MoveTo(Vector3.new(CFG.WalkTo.X, ARRIVAL.Position.Y, CFG.WalkTo.Z))
     task.wait(CFG.ExitHold)
 
     task.spawn(function()
