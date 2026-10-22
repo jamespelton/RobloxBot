@@ -3,10 +3,10 @@
   "last_updated": "2026-10-21T00:00:00-05:00",
   "updated_at": "2026-10-21T00:00:00-05:00",
   "status": "healthy",
-  "summary": "Blackjack: how-to-play tutorial + gold arrow marking the seated player's side",
+  "summary": "Blackjack: James's tutorial + YOU arrow and turn camera, adapted to the live table server",
   "urgent": [],
   "needs_james": [
-    "PLAYTEST blackjack: sit at a table - check the 6-page How to Play opens, the gold arrow + YOU tag sit on your side (to the left of your cards), DEALER tag is across. Tunables in BlackjackTutorial CFG (ArrowSide, ArrowHeight, ArrowSize).",
+    "PLAYTEST blackjack: walk up to a table (arrow over head, 'Press E to play'), press E - tutorial opens, gold ring on your spot, arrow over your side; on your turn the camera moves in over your cards, on the dealer's turn it turns to the dealer. C = normal camera, T = tutorial.",
     "PLAYTEST. Nothing this session was verified in-game - playtest log capture still returns nothing and screenshots come back black, so everything was verified by querying coordinates instead. Specifically worth watching: whether loading actually feels faster now StreamingEnabled is on, whether city traffic and pedestrians animate, and whether the roulette wheel still visibly spins when you bet.",
     "Lighting.Technology is not readable from the plugin sandbox. If it is set to Future, switch it to ShadowMap in the Properties panel - likely the single biggest remaining FPS win.",
     "StreamingMinRadius / StreamingTargetRadius are not scriptable in this Studio build. They are on Roblox defaults; tune them in the Workspace Properties panel if streaming pops in too late.",
@@ -39,7 +39,8 @@
     "roulette_tables_rebuilt": 2
   },
   "session_changes": [
-    "BlackjackTutorial LocalScript (casino/client): step-by-step tutorial on first seat each visit, re-open button above the panel, and a bobbing neon arrow + YOU/DEALER tags only the seated player sees."
+    "BlackjackTutorial replaced with James's design (picture cards, tips, ring, head arrow), hooked to BlackjackRemote; H key moved to T (H is Hit); SPLIT removed (server has no split).",
+    "BlackjackTurnCamera: James's whose-turn camera, rewired from a seat/turn server that doesn't exist to BlackjackTables' State events; its duplicate bet/action HUD dropped."
   ],
   "notes": [
     "Verification pattern that works here: query coordinates, never screenshots (they come back black) and never playtest logs (capture returns nothing). Rotation-aware AABBs matter - naive Position +/- Size/2 is badly wrong for rotated cylinders and has produced false alarms twice.",
