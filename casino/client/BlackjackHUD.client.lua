@@ -1,7 +1,8 @@
--- BLACKJACK HUD + CAMERA + TUTORIAL (LocalScript in StarterPlayer > StarterPlayerScripts)
--- James's clean HUD. Casino changes: guide line breaks use NL (the Studio bridge
--- mangles backslash-n), Sit & Play prompts are hidden while you're seated, and
--- the round chip / help buttons set their existing UICorner instead of adding a second.
+-- BLACKJACK SCREEN + CAMERA + TUTORIAL (LocalScript in StarterPlayer > StarterPlayerScripts)
+-- James's clean HUD with the picture-card tutorial. Casino changes: tutorial line
+-- breaks use NL (the Studio bridge mangles backslash-n), Sit & Play prompts are
+-- hidden while you're seated, and the round chip buttons set their existing
+-- UICorner instead of adding a second.
 local MIN_BET, MAX_BET = 10, 500
 local DEFAULT_BET = 50
 local CHIP_VALUES = { 10, 25, 50, 100, 250 }
@@ -15,6 +16,7 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 local camera = workspace.CurrentCamera
 local remote = ReplicatedStorage:WaitForChild("BlackjackRemote")
 local V = Vector3.new
@@ -78,10 +80,10 @@ local function button(label, color, textColor, size, parent)
     rounded(b, 8)
     return b
 end
-local function row(parent, padding, align)
+local function row(parent, padding)
     return new("UIListLayout", {
         FillDirection = Enum.FillDirection.Horizontal,
-        HorizontalAlignment = align or Enum.HorizontalAlignment.Center,
+        HorizontalAlignment = Enum.HorizontalAlignment.Center,
         VerticalAlignment = Enum.VerticalAlignment.Center,
         Padding = UDim.new(0, padding or 8),
         SortOrder = Enum.SortOrder.LayoutOrder,
@@ -97,12 +99,12 @@ local function commas(n)
 end
 
 ----------------------------------------------------------------
--- Screen layout
+-- Game screen
 ----------------------------------------------------------------
 local gui = new("ScreenGui", {
     Name = "BlackjackHUD", ResetOnSpawn = false, Enabled = false,
     ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
-}, player:WaitForChild("PlayerGui"))
+}, playerGui)
 local uiScale = new("UIScale", {}, gui)
 local function rescale()
     local size = camera.ViewportSize
@@ -130,7 +132,6 @@ local chipsText = text({ Position = UDim2.fromOffset(60, 0), Size = UDim2.new(1,
 
 -- Control bar (bottom middle)
 local controls = panel({ AnchorPoint = Vector2.new(0.5, 1), Position = UDim2.new(0.5, 0, 1, -16), Size = UDim2.fromOffset(580, 68), Visible = false }, gui)
-
 local function infoBlock(parent, caption)
     local f = new("Frame", { Size = UDim2.fromOffset(96, 48), BackgroundTransparency = 1, LayoutOrder = 0 }, parent)
     text({ Size = UDim2.new(1, 0, 0, 16), Text = caption, TextSize = 11, TextColor3 = MUTED }, f)
@@ -169,74 +170,203 @@ local doubleButton = button("Double", Color3.fromRGB(42, 42, 50), GOLD, UDim2.fr
 doubleButton.LayoutOrder = 3
 outline(doubleButton, GOLD, 0.4)
 
--- Help + leave (bottom right)
-local corner = new("Frame", { AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -16, 1, -16), Size = UDim2.fromOffset(170, 36), BackgroundTransparency = 1 }, gui)
-row(corner, 8, Enum.HorizontalAlignment.Right)
-local leaveButton = button("Leave", BG, MUTED, UDim2.fromOffset(84, 36), corner)
+-- Leave button (bottom right, above the HOW TO PLAY button)
+local leaveButton = button("Leave Table", BG, MUTED, UDim2.fromOffset(150, 36), gui)
+leaveButton.AnchorPoint = Vector2.new(1, 1)
+leaveButton.Position = UDim2.new(1, -16, 1, -76)
 leaveButton.BackgroundTransparency = 0.15
 outline(leaveButton)
-local helpButton = button("?", BG, GOLD, UDim2.fromOffset(36, 36), corner)
-helpButton.BackgroundTransparency = 0.15
-helpButton.TextSize = 18
-helpButton.LayoutOrder = 2
-rounded(helpButton, 18)
-outline(helpButton)
 
 ----------------------------------------------------------------
--- Tutorial
+-- Tutorial with card pictures
 ----------------------------------------------------------------
-local backdrop = new("TextButton", {
-    Size = UDim2.fromScale(1, 1), BackgroundColor3 = Color3.new(0, 0, 0), BackgroundTransparency = 0.45,
-    BorderSizePixel = 0, Text = "", AutoButtonColor = false, Visible = false,
-}, gui)
-local modal = panel({ AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromOffset(540, 340), BackgroundTransparency = 0.03 }, backdrop)
-text({ Position = UDim2.fromOffset(26, 20), Size = UDim2.new(1, -80, 0, 16), Text = "HOW TO PLAY BLACKJACK", Font = Enum.Font.GothamBold, TextSize = 12, TextColor3 = GOLD, TextXAlignment = Enum.TextXAlignment.Left }, modal)
-local closeButton = new("TextButton", { AnchorPoint = Vector2.new(1, 0), Position = UDim2.new(1, -14, 0, 12), Size = UDim2.fromOffset(30, 30), BackgroundTransparency = 1, Text = "×", Font = Enum.Font.GothamMedium, TextSize = 24, TextColor3 = MUTED }, modal)
-local pageTitle = text({ Position = UDim2.fromOffset(26, 44), Size = UDim2.new(1, -52, 0, 32), Font = Enum.Font.GothamBold, TextSize = 24, TextXAlignment = Enum.TextXAlignment.Left }, modal)
-new("Frame", { Position = UDim2.fromOffset(26, 84), Size = UDim2.new(1, -52, 0, 1), BackgroundColor3 = GOLD, BackgroundTransparency = 0.6, BorderSizePixel = 0 }, modal)
-local pageBody = text({
-    Position = UDim2.fromOffset(26, 100), Size = UDim2.new(1, -52, 0, 170), TextSize = 16, TextColor3 = Color3.fromRGB(210, 210, 215),
-    TextWrapped = true, RichText = true, LineHeight = 1.2,
-    TextXAlignment = Enum.TextXAlignment.Left, TextYAlignment = Enum.TextYAlignment.Top,
-}, modal)
-local dots = text({ AnchorPoint = Vector2.new(0, 1), Position = UDim2.new(0, 26, 1, -24), Size = UDim2.fromOffset(160, 36), TextSize = 14, TextColor3 = MUTED, TextXAlignment = Enum.TextXAlignment.Left }, modal)
-local navRow = new("Frame", { AnchorPoint = Vector2.new(1, 1), Position = UDim2.new(1, -26, 1, -24), Size = UDim2.fromOffset(240, 36), BackgroundTransparency = 1 }, modal)
-row(navRow, 10, Enum.HorizontalAlignment.Right)
-local backButton = button("Back", Color3.fromRGB(42, 42, 50), TEXT, UDim2.fromOffset(96, 36), navRow)
-local nextButton = button("Next", GOLD, Color3.fromRGB(24, 18, 8), UDim2.fromOffset(110, 36), navRow)
-nextButton.LayoutOrder = 2
-
-local B, E = "<font color='#C9A85C'><b>", "</b></font>"
-local NL2 = NL .. NL
-local PAGES = {
-    { "The Goal", "Beat the dealer by getting a hand total " .. B .. "closer to 21" .. E .. " without going over." .. NL2 .. "Going over 21 is a " .. B .. "bust" .. E .. " and you lose your bet right away." },
-    { "Card Values", B .. "2 – 10" .. E .. "  count as their number." .. NL .. B .. "J, Q, K" .. E .. "  count as 10." .. NL .. B .. "Ace" .. E .. "  counts as 11, or 1 if 11 would make you bust." .. NL2 .. "Your total is shown above your cards on the table." },
-    { "Placing a Bet", "When a round opens, tap the chips to set your bet, then press " .. B .. "Place Bet" .. E .. " before the timer runs out." .. NL2 .. "You and the dealer each get two cards. One of the dealer's cards stays face down." },
-    { "Your Turn", B .. "Hit" .. E .. "  –  take another card." .. NL .. B .. "Stand" .. E .. "  –  keep your total and end your turn." .. NL .. B .. "Double" .. E .. "  –  double your bet and take exactly one more card." .. NL2 .. "If the timer runs out, you automatically stand." },
-    { "Dealer & Payouts", "The dealer reveals the hidden card and draws until reaching " .. B .. "17 or more" .. E .. "." .. NL2 .. "A win pays " .. B .. "1 to 1" .. E .. ". A " .. B .. "Blackjack" .. E .. " (Ace + a 10-value card) pays " .. B .. "3 to 2" .. E .. ". A tie returns your bet." .. NL2 .. "Press " .. B .. "H" .. E .. " to reopen this guide and " .. B .. "C" .. E .. " to switch cameras." },
-}
-local page = 1
-local function showPage(n)
-    page = math.clamp(n, 1, #PAGES)
-    pageTitle.Text = PAGES[page][1]
-    pageBody.Text = PAGES[page][2]
-    local d = {}
-    for i = 1, #PAGES do
-        d[i] = i == page and "●" or "○"
-    end
-    dots.Text = table.concat(d, "  ")
-    backButton.Visible = page > 1
-    nextButton.Text = page == #PAGES and "Got it" or "Next"
-    backdrop.Visible = true
+local TGOLD = Color3.fromRGB(212, 175, 55)
+local tutGui = new("ScreenGui", {
+    Name = "BlackjackTutorial", ResetOnSpawn = false, Enabled = false, DisplayOrder = 10,
+    ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
+}, playerGui)
+local function sCorner(o, r)
+    new("UICorner", { CornerRadius = UDim.new(r, 0) }, o)
 end
-local function hideTutorial()
-    backdrop.Visible = false
+local function sStroke(o, color, thickness)
+    new("UIStroke", { Color = color, Thickness = thickness, ApplyStrokeMode = Enum.ApplyStrokeMode.Border }, o)
+end
+local function tLabel(parent, txt, pos, size, color, font)
+    return new("TextLabel", {
+        Position = pos, Size = size, BackgroundTransparency = 1, Text = txt, TextScaled = true,
+        RichText = true, TextWrapped = true, Font = font or Enum.Font.Gotham, TextColor3 = color or Color3.new(1, 1, 1),
+    }, parent)
+end
+local function tButton(parent, txt, pos, size, bg)
+    local b = new("TextButton", {
+        Position = pos, Size = size, BackgroundColor3 = bg or Color3.fromRGB(40, 30, 50), Text = txt,
+        TextScaled = true, Font = Enum.Font.GothamBold, TextColor3 = Color3.new(1, 1, 1), AutoButtonColor = true,
+    }, parent)
+    sCorner(b, 0.25)
+    sStroke(b, TGOLD, 1.5)
+    new("UIPadding", { PaddingTop = UDim.new(0.18, 0), PaddingBottom = UDim.new(0.18, 0) }, b)
+    return b
+end
+
+local helpButton = tButton(tutGui, "?  HOW TO PLAY", UDim2.new(1, -16, 1, -16), UDim2.fromOffset(150, 48), Color3.fromRGB(120, 20, 30))
+helpButton.AnchorPoint = Vector2.new(1, 1)
+
+local tutPanel = new("Frame", {
+    AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Size = UDim2.fromScale(0.62, 0.72),
+    BackgroundColor3 = Color3.fromRGB(16, 12, 20), Visible = false,
+}, tutGui)
+sCorner(tutPanel, 0.03)
+sStroke(tutPanel, TGOLD, 3)
+new("UISizeConstraint", { MaxSize = Vector2.new(780, 560), MinSize = Vector2.new(320, 300) }, tutPanel)
+local feltStripe = new("Frame", { Size = UDim2.fromScale(1, 0.16), BackgroundColor3 = Color3.fromRGB(20, 95, 45), BorderSizePixel = 0 }, tutPanel)
+sCorner(feltStripe, 0.2)
+
+tLabel(tutPanel, "HOW TO PLAY  <font color='#FFD36B'>BLACKJACK</font>", UDim2.fromScale(0.05, 0.025), UDim2.fromScale(0.8, 0.11), Color3.new(1, 1, 1), Enum.Font.GothamBlack)
+local closeButton = tButton(tutPanel, "X", UDim2.fromScale(0.9, 0.03), UDim2.fromScale(0.07, 0.1), Color3.fromRGB(120, 20, 30))
+local pageTitle = tLabel(tutPanel, "", UDim2.fromScale(0.05, 0.19), UDim2.fromScale(0.9, 0.08), Color3.fromRGB(255, 215, 110), Enum.Font.GothamBlack)
+local cardRow = new("Frame", { Position = UDim2.fromScale(0.05, 0.29), Size = UDim2.fromScale(0.9, 0.22), BackgroundTransparency = 1 }, tutPanel)
+new("UIListLayout", {
+    FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center,
+    VerticalAlignment = Enum.VerticalAlignment.Center, Padding = UDim.new(0.015, 0), SortOrder = Enum.SortOrder.LayoutOrder,
+}, cardRow)
+local body = tLabel(tutPanel, "", UDim2.fromScale(0.06, 0.53), UDim2.fromScale(0.88, 0.3), Color3.fromRGB(235, 235, 235))
+body.TextXAlignment = Enum.TextXAlignment.Left
+body.TextYAlignment = Enum.TextYAlignment.Top
+local backButton = tButton(tutPanel, "BACK", UDim2.fromScale(0.05, 0.86), UDim2.fromScale(0.22, 0.1))
+local nextButton = tButton(tutPanel, "NEXT", UDim2.fromScale(0.73, 0.86), UDim2.fromScale(0.22, 0.1), Color3.fromRGB(20, 95, 45))
+local dots = new("Frame", { Position = UDim2.fromScale(0.3, 0.88), Size = UDim2.fromScale(0.4, 0.06), BackgroundTransparency = 1 }, tutPanel)
+new("UIListLayout", {
+    FillDirection = Enum.FillDirection.Horizontal, HorizontalAlignment = Enum.HorizontalAlignment.Center,
+    VerticalAlignment = Enum.VerticalAlignment.Center, Padding = UDim.new(0.03, 0),
+}, dots)
+
+-- A drawn playing card
+local cardOrder = 0
+local function makeCard(rank, red, faceDown)
+    cardOrder += 1
+    local card = new("Frame", {
+        Size = UDim2.fromScale(0.13, 1), LayoutOrder = cardOrder,
+        BackgroundColor3 = faceDown and Color3.fromRGB(150, 20, 30) or Color3.fromRGB(250, 250, 245),
+    }, cardRow)
+    sCorner(card, 0.12)
+    sStroke(card, faceDown and TGOLD or Color3.fromRGB(180, 180, 180), 2)
+    new("UIAspectRatioConstraint", { AspectRatio = 0.7 }, card)
+    if faceDown then
+        local inner = new("Frame", {
+            AnchorPoint = Vector2.new(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5),
+            Size = UDim2.fromScale(0.7, 0.8), BackgroundTransparency = 1,
+        }, card)
+        sStroke(inner, TGOLD, 2)
+        sCorner(inner, 0.1)
+    else
+        local color = red and Color3.fromRGB(200, 25, 30) or Color3.fromRGB(20, 20, 20)
+        local small = tLabel(card, rank, UDim2.fromScale(0.06, 0.03), UDim2.fromScale(0.4, 0.25), color, Enum.Font.GothamBlack)
+        small.TextXAlignment = Enum.TextXAlignment.Left
+        tLabel(card, rank, UDim2.fromScale(0.1, 0.28), UDim2.fromScale(0.8, 0.5), color, Enum.Font.GothamBlack)
+    end
+end
+local function makeSymbol(txt)
+    cardOrder += 1
+    local l = tLabel(cardRow, txt, UDim2.new(), UDim2.fromScale(0.08, 0.6), Color3.fromRGB(255, 215, 110), Enum.Font.GothamBlack)
+    l.LayoutOrder = cardOrder
+end
+
+local Y = "<font color='#FFD36B'><b>"
+local E = "</b></font>"
+local PAGES = {
+    {
+        title = "THE GOAL",
+        cards = { { "K", false }, { "A", true }, "=", "21!" },
+        text = "Get a hand that is " .. Y .. "closer to 21" .. E .. " than the dealer's hand, " .. Y .. "without going over 21" .. E .. "." .. NL
+            .. "Going over 21 is called a " .. Y .. "BUST" .. E .. " and you lose that hand.",
+    },
+    {
+        title = "CARD VALUES",
+        cards = { { "7", true }, "= 7", { "K", false }, "= 10", { "A", true }, "= 1 or 11" },
+        text = Y .. "2 to 10" .. E .. " are worth their number." .. NL
+            .. Y .. "J, Q and K" .. E .. " are each worth 10." .. NL
+            .. "An " .. Y .. "Ace" .. E .. " is worth 11, or 1 if 11 would make you bust.",
+    },
+    {
+        title = "PLACING A BET",
+        cards = { "10", "25", "50", "→", "PLACE BET" },
+        text = "When the round opens, tap the " .. Y .. "chip buttons" .. E .. " at the bottom to set your bet, then press " .. Y .. "Place Bet" .. E .. " before the timer runs out.",
+    },
+    {
+        title = "YOUR CHOICES",
+        cards = { { "9", false }, { "5", true }, "= 14", "?" },
+        text = Y .. "HIT" .. E .. " - take another card." .. NL
+            .. Y .. "STAND" .. E .. " - keep your total and end your turn." .. NL
+            .. Y .. "DOUBLE" .. E .. " - double your bet and get exactly one more card.",
+    },
+    {
+        title = "THE DEALER",
+        cards = { { "10", true }, { "", false, true }, "→", { "10", true }, { "7", false }, "= 17" },
+        text = "The dealer has one card " .. Y .. "face down" .. E .. ". After every player finishes, the dealer flips it over." .. NL
+            .. "The dealer " .. Y .. "must hit until 17 or more" .. E .. ". If the dealer busts, everyone still in wins!",
+    },
+    {
+        title = "HOW YOU WIN",
+        cards = { { "A", false }, { "Q", true }, "= BLACKJACK" },
+        text = Y .. "Beat the dealer" .. E .. ": you win the same as your bet (1 to 1)." .. NL
+            .. Y .. "Blackjack" .. E .. " (an Ace + a 10-value card as your first two cards): pays 3 to 2." .. NL
+            .. Y .. "Tie" .. E .. ": you get your bet back.   " .. Y .. "Bust" .. E .. ": you lose your bet.",
+    },
+    {
+        title = "BEGINNER TIPS",
+        cards = { { "6", false }, { "5", true }, "= 11", "→", "DOUBLE!" },
+        text = "• " .. Y .. "Stand" .. E .. " on 17 or more.   • " .. Y .. "Hit" .. E .. " on 11 or less." .. NL
+            .. "• " .. Y .. "Double" .. E .. " when you have 11." .. NL
+            .. "• Press " .. Y .. "C" .. E .. " to switch cameras and " .. Y .. "H" .. E .. " to open this guide.",
+    },
+}
+
+local page = 1
+local dotFrames = {}
+for i = 1, #PAGES do
+    local d = new("Frame", { Size = UDim2.fromScale(0.06, 0.6), BackgroundColor3 = Color3.fromRGB(90, 80, 100) }, dots)
+    sCorner(d, 1)
+    new("UIAspectRatioConstraint", { AspectRatio = 1 }, d)
+    dotFrames[i] = d
+end
+local function showPage(i)
+    page = math.clamp(i, 1, #PAGES)
+    local data = PAGES[page]
+    pageTitle.Text = page .. ".  " .. data.title
+    body.Text = data.text
+    for _, child in ipairs(cardRow:GetChildren()) do
+        if not child:IsA("UIListLayout") then
+            child:Destroy()
+        end
+    end
+    cardOrder = 0
+    for _, item in ipairs(data.cards) do
+        if typeof(item) == "table" then
+            makeCard(item[1], item[2], item[3])
+        else
+            makeSymbol(item)
+        end
+    end
+    for k, d in ipairs(dotFrames) do
+        d.BackgroundColor3 = k == page and TGOLD or Color3.fromRGB(90, 80, 100)
+    end
+    backButton.Visible = page > 1
+    nextButton.Text = page == #PAGES and "GOT IT!" or "NEXT"
+end
+local function openTutorial()
+    showPage(1)
+    tutPanel.Visible = true
+    tutPanel.Size = UDim2.fromScale(0.5, 0.58)
+    TweenService:Create(tutPanel, TweenInfo.new(0.25, Enum.EasingStyle.Back), { Size = UDim2.fromScale(0.62, 0.72) }):Play()
+end
+local function closeTutorial()
+    tutPanel.Visible = false
 end
 local function toggleTutorial()
-    if backdrop.Visible then
-        hideTutorial()
+    if tutPanel.Visible then
+        closeTutorial()
     else
-        showPage(1)
+        openTutorial()
     end
 end
 backButton.MouseButton1Click:Connect(function()
@@ -244,12 +374,12 @@ backButton.MouseButton1Click:Connect(function()
 end)
 nextButton.MouseButton1Click:Connect(function()
     if page == #PAGES then
-        hideTutorial()
+        closeTutorial()
     else
         showPage(page + 1)
     end
 end)
-closeButton.MouseButton1Click:Connect(hideTutorial)
+closeButton.MouseButton1Click:Connect(closeTutorial)
 helpButton.MouseButton1Click:Connect(toggleTutorial)
 
 ----------------------------------------------------------------
@@ -474,9 +604,10 @@ remote.OnClientEvent:Connect(function(kind, data)
     end
     if not gui.Enabled then
         gui.Enabled = true
+        tutGui.Enabled = true
         if AUTO_TUTORIAL and not seenTutorial then
             seenTutorial = true
-            showPage(1)
+            openTutorial()
         end
     end
     local seat = mySeat()
@@ -567,7 +698,8 @@ RunService.Heartbeat:Connect(function()
     end
     if gui.Enabled and not seated then
         gui.Enabled = false
-        hideTutorial()
+        tutGui.Enabled = false
+        closeTutorial()
         setMode("none")
         phase = ""
         restoreCamera()
