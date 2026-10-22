@@ -400,25 +400,6 @@ local gameCamera = true
 local tableCenter, mySpot
 local lastShot, shotKey, swing
 
-local function fadeCharacters(on)
-    for _, plr in ipairs(Players:GetPlayers()) do
-        local character = plr.Character
-        if character then
-            local near = tableCenter and character:FindFirstChild("HumanoidRootPart")
-                and (character.HumanoidRootPart.Position - tableCenter).Magnitude < 25
-            local amount = 0
-            if on and near then
-                amount = plr == player and 1 or 0.65
-            end
-            for _, d in ipairs(character:GetDescendants()) do
-                if d:IsA("BasePart") or d:IsA("Decal") then
-                    d.LocalTransparencyModifier = amount
-                end
-            end
-        end
-    end
-end
-
 local function stopSwing()
     if swing then
         swing:Disconnect()
@@ -457,7 +438,6 @@ local function shoot(key, eye, target)
             stopSwing()
         end
     end)
-    fadeCharacters(true)
 end
 local function restoreCamera()
     stopSwing()
@@ -467,13 +447,17 @@ local function restoreCamera()
     if humanoid then
         camera.CameraSubject = humanoid
     end
-    fadeCharacters(false)
 end
 -- High view from behind a spot on the table, looking across it
 local function viewOf(spot)
     local outward = flat(spot - tableCenter)
     outward = outward.Magnitude > 0.01 and outward.Unit or V(0, 0, 1)
     return spot + outward * 6 + UP * 10, spot:Lerp(tableCenter, 0.35)
+end
+-- View from high above and behind a chair, looking down at that seat's cards
+local function seatView(seatPos, spot)
+    local outward = flat(seatPos - tableCenter).Unit
+    return seatPos + outward * 5 + UP * 11, spot:Lerp(tableCenter, 0.3)
 end
 UserInputService.InputBegan:Connect(function(input, typing)
     if typing or not gui.Enabled then
@@ -577,7 +561,13 @@ remote.OnClientEvent:Connect(function(kind, data)
         showActions(false)
         refreshControls()
         if tableCenter and mySpot then
-            shoot("mine", viewOf(mySpot))
+            local seat = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+            seat = seat and seat.SeatPart
+            if seat then
+                shoot("mine", seatView(seat.Position, mySpot))
+            else
+                shoot("mine", viewOf(mySpot))
+            end
         end
     elseif kind == "hands" then
         renderHands(data)
@@ -595,7 +585,11 @@ remote.OnClientEvent:Connect(function(kind, data)
                 bannerText.Text = data.name .. "'s turn - watch their cards"
                 showActions(false)
             end
-            shoot("player" .. data.userId, viewOf(data.focus))
+            if data.seatPos then
+                shoot("player" .. data.userId, seatView(data.seatPos, data.focus))
+            else
+                shoot("player" .. data.userId, viewOf(data.focus))
+            end
         else
             bannerText.Text = "Dealer's turn..."
             showActions(false)
@@ -635,7 +629,6 @@ workspace.DescendantAdded:Connect(function(d)
     end
 end)
 
-local lastFade = 0
 RunService.Heartbeat:Connect(function()
     local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
     local seated = humanoid and humanoid.SeatPart ~= nil
@@ -651,8 +644,31 @@ RunService.Heartbeat:Connect(function()
         restoreCamera()
     end
     chipsText.Text = "CHIPS  " .. chips()
-    if gui.Enabled and lastShot and gameCamera and os.clock() - lastFade > 0.5 then
-        lastFade = os.clock()
-        fadeCharacters(true)
+end)
+
+-- Hide your own character (and fade other players) while the game camera is on,
+-- so nobody blocks your view of the cards. Only writes while the game camera is
+-- on, plus one reset when it turns off, so Roblox's own first-person fade still
+-- works the rest of the time.
+local fadedLastFrame = false
+RunService.RenderStepped:Connect(function()
+    local gameCamOn = gui.Enabled and camera.CameraType == Enum.CameraType.Scriptable
+    if not gameCamOn and not fadedLastFrame then
+        return
+    end
+    fadedLastFrame = gameCamOn
+    for _, plr in ipairs(Players:GetPlayers()) do
+        local character = plr.Character
+        if character then
+            local amount = 0
+            if gameCamOn then
+                amount = (plr == player) and 1 or 0.6
+            end
+            for _, d in ipairs(character:GetDescendants()) do
+                if d:IsA("BasePart") or d:IsA("Decal") then
+                    d.LocalTransparencyModifier = amount
+                end
+            end
+        end
     end
 end)
