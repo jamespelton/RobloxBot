@@ -193,6 +193,11 @@ local function makeBillboard(parent, position)
     stroke.Thickness = 2
     stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     stroke.Parent = label
+    -- only show the tag while it has something to say (no empty boxes over idle tables)
+    bb.Enabled = false
+    label:GetPropertyChangedSignal("Text"):Connect(function()
+        bb.Enabled = label.Text ~= ""
+    end)
     return anchor, label
 end
 
