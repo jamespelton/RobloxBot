@@ -1,91 +1,81 @@
 -- BLACKJACK TUTORIAL + "YOU" ARROW (LocalScript in StarterPlayer > StarterPlayerScripts)
--- James's tutorial design, wired to the casino's BlackjackTables server.
---   * Walk up to a blackjack table: a spinning gold arrow + "YOU" appears over
---     your head ("Press E to play") and the "? HOW TO PLAY" button shows.
---   * Once you're playing (joined through the E prompt): a pulsing gold ring
---     marks your spot on the felt and the arrow hovers over YOUR side of the
---     table. When the cards come out it slides to your left so it never
---     covers them.
---   * The tutorial opens automatically the first time you play each visit.
---     T or the button opens it again (H is Hit at the table, so it's not used).
--- Only you can see the arrow and ring.
-
+-- James's tutorial for the v3 seat-based blackjack (BlackjackV3 + BlackjackHUD).
+-- Casino changes from the original: SPLIT taken out (the table doesn't do
+-- splits), and line breaks built with NL (the Studio bridge mangles backslash-n).
 -- Settings:
-local AUTO_OPEN = true          -- open the tutorial the first time you play at a blackjack table
+local AUTO_OPEN = true          -- open the tutorial the first time you sit at a blackjack table
 local NEAR_DISTANCE = 8         -- how close you need to be to a table for the arrow and button
 local ARROW_COLOR = Color3.fromRGB(255, 210, 80)
-local TUTORIAL_KEY = Enum.KeyCode.T
-local ARROW_SIDE = -2.9         -- where the arrow moves once cards are dealt, in card widths (negative = your left)
 
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
-local remote = ReplicatedStorage:WaitForChild("BlackjackRemote")
 local V = Vector3.new
 local NL = string.char(10)
 
 ----------------------------------------------------------------
 -- Find the blackjack tables
 ----------------------------------------------------------------
-local tables = {} -- [model] = { model, cf, size }
-
-local function isTableModel(m)
-    if not m:IsA("Model") then
-        return false
-    end
-    local name = string.lower(m.Name)
-    return string.find(name, "blackjack") ~= nil and not string.find(name, "_chairs")
-end
-
+local tables = {}
+local known = {}
 local function addTable(m)
-    if tables[m] or not isTableModel(m) then
+    if known[m] or not m:IsA("Model") then
         return
     end
-    local ok, cf, size = pcall(function()
-        return m:GetBoundingBox()
-    end)
-    if ok and size.Magnitude > 0 then
-        tables[m] = { model = m, cf = cf, size = size }
+    local name = string.lower(m.Name)
+    if string.find(name, "blackjack") and not string.find(name, "_chairs") then
+        local ok, cf, size = pcall(function()
+            return m:GetBoundingBox()
+        end)
+        if ok and size.Magnitude > 0 then
+            known[m] = true
+            table.insert(tables, { model = m, cf = cf, size = size })
+        end
     end
 end
-
--- one scan, then pick up tables that stream in later without rescanning the place
+-- Scan once, then pick up tables that stream in later. (Rescanning the whole
+-- place every 10s cost ~25ms - a visible hitch - with ~100k instances.)
 for _, m in ipairs(workspace:GetDescendants()) do
     addTable(m)
 end
 workspace.DescendantAdded:Connect(function(m)
     if m:IsA("Model") then
-        task.defer(addTable, m) -- let its parts arrive first
+        task.delay(1, addTable, m) -- give its parts a moment to arrive
     end
 end)
-workspace.DescendantRemoving:Connect(function(m)
-    tables[m] = nil
-end)
+
+-- The casino tables' bounding boxes lie on their side (local X points down),
+-- so measure along whichever two box axes are actually horizontal.
+local function horizontalGap(t, position)
+    local lp = t.cf:PointToObjectSpace(position)
+    local axes = {
+        { math.abs(t.cf.RightVector.Y), lp.X, t.size.X },
+        { math.abs(t.cf.UpVector.Y), lp.Y, t.size.Y },
+        { math.abs(t.cf.LookVector.Y), lp.Z, t.size.Z },
+    }
+    table.sort(axes, function(a, b)
+        return a[1] < b[1]
+    end)
+    local da = math.max(0, math.abs(axes[1][2]) - axes[1][3] / 2)
+    local db = math.max(0, math.abs(axes[2][2]) - axes[2][3] / 2)
+    return math.sqrt(da * da + db * db)
+end
 
 local function nearestTable(position)
     local best, bestDistance = nil, math.huge
-    for _, t in pairs(tables) do
-        local lp = t.cf:PointToObjectSpace(position)
-        local dx = math.max(0, math.abs(lp.X) - t.size.X / 2)
-        local dz = math.max(0, math.abs(lp.Z) - t.size.Z / 2)
-        local distance = math.sqrt(dx * dx + dz * dz)
-        if distance < bestDistance then
-            best, bestDistance = t, distance
+    for _, t in ipairs(tables) do
+        if t.model.Parent then
+            local distance = horizontalGap(t, position)
+            if distance < bestDistance then
+                best, bestDistance = t, distance
+            end
         end
     end
     return best, bestDistance
 end
-
-----------------------------------------------------------------
--- What the blackjack server tells us
-----------------------------------------------------------------
-local layouts = {}       -- [tableId] = layout (PlayerRow, DealerRow, CardSize, ...)
-local myLayout = nil     -- set while you're playing at a table
-local cardsOut = false   -- true from the deal until the next betting round
 
 ----------------------------------------------------------------
 -- The "YOU" arrow and the betting spot ring (only you can see them)
@@ -138,7 +128,7 @@ local hintLabel = Instance.new("TextLabel")
 hintLabel.Position = UDim2.fromScale(0, 0.62)
 hintLabel.Size = UDim2.fromScale(1, 0.38)
 hintLabel.BackgroundTransparency = 1
-hintLabel.Text = "Press E to play"
+hintLabel.Text = "Sit down to play"
 hintLabel.TextScaled = true
 hintLabel.Font = Enum.Font.GothamBold
 hintLabel.TextColor3 = Color3.new(1, 1, 1)
@@ -147,8 +137,8 @@ local hintStroke = Instance.new("UIStroke")
 hintStroke.Thickness = 1.5
 hintStroke.Parent = hintLabel
 
-local ring = newPart(V(0.008, 3.2, 3.2), Enum.PartType.Cylinder)
-local ringInner = newPart(V(0.009, 2.4, 2.4), Enum.PartType.Cylinder)
+local ring = newPart(V(0.05, 3.2, 3.2), Enum.PartType.Cylinder)
+local ringInner = newPart(V(0.06, 2.4, 2.4), Enum.PartType.Cylinder)
 ringInner.Color = Color3.fromRGB(20, 60, 30)
 ringInner.Material = Enum.Material.SmoothPlastic
 
@@ -161,12 +151,6 @@ setVisible(arrowParts, false)
 setVisible({ ring, ringInner }, false)
 billboard.Enabled = false
 
-local function placeArrow(top, spin)
-    shaft.CFrame = CFrame.new(top + V(0, 0.8, 0)) * spin
-    headLeft.CFrame = CFrame.new(top) * spin * CFrame.new(-0.35, -0.15, 0) * CFrame.Angles(0, 0, math.rad(40))
-    headRight.CFrame = CFrame.new(top) * spin * CFrame.new(0.35, -0.15, 0) * CFrame.Angles(0, 0, math.rad(-40))
-end
-
 ----------------------------------------------------------------
 -- Tutorial window
 ----------------------------------------------------------------
@@ -174,7 +158,6 @@ local GOLD = Color3.fromRGB(212, 175, 55)
 local gui = Instance.new("ScreenGui")
 gui.Name = "BlackjackTutorial"
 gui.ResetOnSpawn = false
-gui.DisplayOrder = 7 -- above the blackjack panel
 gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 gui.Parent = player:WaitForChild("PlayerGui")
 
@@ -226,7 +209,7 @@ local function button(parent, text, pos, size, bg)
 end
 
 -- "? HOW TO PLAY" button in the corner
-local helpButton = button(gui, "?  HOW TO PLAY  (T)", UDim2.new(1, -16, 1, -16), UDim2.fromOffset(210, 48), Color3.fromRGB(120, 20, 30))
+local helpButton = button(gui, "?  HOW TO PLAY", UDim2.new(1, -16, 1, -16), UDim2.fromOffset(190, 48), Color3.fromRGB(120, 20, 30))
 helpButton.AnchorPoint = Vector2.new(1, 1)
 helpButton.Visible = false
 
@@ -336,15 +319,15 @@ local PAGES = {
     {
         title = "YOUR CHOICES",
         cards = { { "9", false }, { "5", true }, "= 14", "?" },
-        text = Y .. "HIT  (H)" .. E .. " - take another card." .. NL
-            .. Y .. "STAND  (S)" .. E .. " - keep your total and end your turn." .. NL
-            .. Y .. "DOUBLE  (D)" .. E .. " - double your bet and get exactly one more card (first two cards only).",
+        text = Y .. "HIT" .. E .. " - take another card." .. NL
+            .. Y .. "STAND" .. E .. " - keep your total and end your turn." .. NL
+            .. Y .. "DOUBLE" .. E .. " - double your bet and get exactly one more card.",
     },
     {
         title = "THE DEALER",
         cards = { { "10", true }, { "", false, true }, "→", { "10", true }, { "7", false }, "= 17" },
-        text = "The dealer has one card " .. Y .. "face down" .. E .. ". When you stand, the dealer flips it over." .. NL
-            .. "The dealer " .. Y .. "must hit until 17 or more" .. E .. ". If the dealer busts, you win!",
+        text = "The dealer has one card " .. Y .. "face down" .. E .. ". After every player finishes, the dealer flips it over." .. NL
+            .. "The dealer " .. Y .. "must hit until 17 or more" .. E .. ". If the dealer busts, everyone still in wins!",
     },
     {
         title = "HOW YOU WIN",
@@ -410,13 +393,6 @@ end
 local function closeTutorial()
     panel.Visible = false
 end
-local function toggleTutorial()
-    if panel.Visible then
-        closeTutorial()
-    else
-        openTutorial()
-    end
-end
 
 backButton.MouseButton1Click:Connect(function()
     showPage(page - 1)
@@ -429,101 +405,90 @@ nextButton.MouseButton1Click:Connect(function()
     end
 end)
 closeButton.MouseButton1Click:Connect(closeTutorial)
-helpButton.MouseButton1Click:Connect(toggleTutorial)
-UserInputService.InputBegan:Connect(function(input, typing)
-    if not typing and input.KeyCode == TUTORIAL_KEY and helpButton.Visible then
-        toggleTutorial()
+helpButton.MouseButton1Click:Connect(function()
+    if panel.Visible then
+        closeTutorial()
+    else
+        openTutorial()
     end
 end)
-
-----------------------------------------------------------------
--- Server events (the same remote BlackjackClient listens to)
-----------------------------------------------------------------
-local shownThisSession = false
-
-remote.OnClientEvent:Connect(function(event, tableId, data)
-    if event == "Open" then
-        layouts[tableId] = data
-    elseif event == "Joined" then
-        myLayout = layouts[tableId]
-        cardsOut = false
-        if AUTO_OPEN and not shownThisSession then
-            shownThisSession = true
-            task.delay(0.9, openTutorial) -- after the camera swoops over the table
+UserInputService.InputBegan:Connect(function(input, typing)
+    if not typing and input.KeyCode == Enum.KeyCode.H and helpButton.Visible then
+        if panel.Visible then
+            closeTutorial()
+        else
+            openTutorial()
         end
-    elseif event == "Left" then
-        myLayout = nil
-        cardsOut = false
-    elseif event == "State" and myLayout then
-        -- cards are on the felt from the deal until the next betting round
-        cardsOut = data.Phase ~= "Betting"
     end
 end)
 
 ----------------------------------------------------------------
 -- Every frame: show the arrow, ring and button when you're at a table
 ----------------------------------------------------------------
-local arrowSide = 0 -- 0 = over your spot, 1 = moved aside for the cards
+local shownThisSession = false
+local rayParams = RaycastParams.new()
+rayParams.FilterType = Enum.RaycastFilterType.Exclude
 
-RunService.RenderStepped:Connect(function(dt)
+RunService.RenderStepped:Connect(function()
     local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
     local root = character and character:FindFirstChild("HumanoidRootPart")
     local head = character and character:FindFirstChild("Head")
-    local t = os.clock()
-    local spin = CFrame.Angles(0, t * 2, 0)
-    local bob = math.sin(t * 3) * 0.35
-
-    local seated = myLayout ~= nil
-    local close = false
-    if root and not seated then
-        local nearby, distance = nearestTable(root.Position)
-        close = nearby ~= nil and distance <= NEAR_DISTANCE
+    if not (humanoid and root and head) then
+        setVisible(arrowParts, false)
+        setVisible({ ring, ringInner }, false)
+        billboard.Enabled = false
+        helpButton.Visible = false
+        return
     end
+
+    local t = os.clock()
+    local seat = humanoid.SeatPart
+    local nearby, distance = nearestTable(root.Position)
+    local seated = seat ~= nil and nearby ~= nil and distance <= 5
+    local close = nearby ~= nil and distance <= NEAR_DISTANCE
 
     helpButton.Visible = close or seated
     if not (close or seated) and panel.Visible then
         closeTutorial()
     end
 
-    if seated then
-        -- Arrow over YOUR side of the table, ring on your spot.
-        -- Row frame: X = your right, Y = up, Z = toward you.
-        local row = myLayout.PlayerRow
-        local cardW = myLayout.CardSize.X
-        local cardL = myLayout.CardSize.Z
-
-        local target = cardsOut and 1 or 0
-        arrowSide += (target - arrowSide) * math.min(1, dt * 6)
-        local over = row * CFrame.new(ARROW_SIDE * cardW * arrowSide, cardL * 2.2 + bob, 0)
+    -- Arrow over your head
+    if close or seated then
         setVisible(arrowParts, true)
         billboard.Enabled = true
-        hintLabel.Visible = false
-        placeArrow(over.Position, spin)
-
-        local pulse = 0.25 + 0.25 * (0.5 + 0.5 * math.sin(t * 4))
-        local ringSize = cardL * 2.3
-        ring.Size = V(0.008, ringSize, ringSize)
-        ringInner.Size = V(0.009, ringSize * 0.76, ringSize * 0.76)
-        -- just under the card row so the cards always sit on top of it
-        local cf = row * CFrame.new(0, -0.005, 0) * CFrame.Angles(0, 0, math.rad(90))
-        ring.CFrame = cf
-        ringInner.CFrame = cf * CFrame.new(0.0005, 0, 0)
-        ring.Transparency = pulse
-        ringInner.Transparency = 0.2
-    elseif close and head then
-        -- Walking up to a table: arrow over your head
-        arrowSide = 0
-        setVisible(arrowParts, true)
-        billboard.Enabled = true
-        hintLabel.Visible = true
-        placeArrow(head.Position + V(0, 3.2 + bob, 0), spin)
-        setVisible({ ring, ringInner }, false)
+        hintLabel.Visible = not seated
+        local top = head.Position + V(0, 3.2 + math.sin(t * 3) * 0.35, 0)
+        local spin = CFrame.Angles(0, t * 2, 0)
+        shaft.CFrame = CFrame.new(top + V(0, 0.8, 0)) * spin
+        headLeft.CFrame = CFrame.new(top) * spin * CFrame.new(-0.35, -0.15, 0) * CFrame.Angles(0, 0, math.rad(40))
+        headRight.CFrame = CFrame.new(top) * spin * CFrame.new(0.35, -0.15, 0) * CFrame.Angles(0, 0, math.rad(-40))
     else
-        arrowSide = 0
         setVisible(arrowParts, false)
         billboard.Enabled = false
+    end
+
+    -- Gold ring on the felt in front of your seat
+    if seated then
+        local center = nearby.cf.Position
+        local toTable = V(center.X - seat.Position.X, 0, center.Z - seat.Position.Z)
+        local spotXZ = seat.Position + toTable * 0.45
+        rayParams.FilterDescendantsInstances = { character, localFolder }
+        local hit = workspace:Raycast(V(spotXZ.X, seat.Position.Y + 8, spotXZ.Z), V(0, -15, 0), rayParams)
+        if hit then
+            local pulse = 0.25 + 0.25 * (0.5 + 0.5 * math.sin(t * 4))
+            local cf = CFrame.new(hit.Position + V(0, 0.03, 0)) * CFrame.Angles(0, 0, math.rad(90))
+            ring.CFrame = cf
+            ringInner.CFrame = cf * CFrame.new(0.005, 0, 0)
+            ring.Transparency = pulse
+            ringInner.Transparency = 0.2
+        end
+
+        if AUTO_OPEN and not shownThisSession then
+            shownThisSession = true
+            openTutorial()
+        end
+    else
         setVisible({ ring, ringInner }, false)
     end
 end)
-
-print("[Casino] BlackjackTutorial ready")
