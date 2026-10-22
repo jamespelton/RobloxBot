@@ -11,6 +11,9 @@
 --   * Line breaks built with NL (the Studio bridge mangles backslash-n).
 --   * The stool on the dealer's side isn't a player seat; it's hidden so the
 --     dealer NPC can stand there (HIDE_DEALER_STOOL).
+--   * Sends a "hands" message (every hand, turn and status) for the on-screen
+--     cards in BlackjackHUD v3, and puts a "Sit & Play" BlackjackJoinPrompt on
+--     each player seat.
 
 -- Settings:
 local MIN_BET, MAX_BET = 10, 500
@@ -343,6 +346,25 @@ for _, raw in ipairs(tableList) do
         playerAreaSum += spot
         local _, label = makeBillboard(folder, spot + V(0, 2.4, 0))
         table.insert(seatInfos, { seat = s, spot = spot, out = out, tangent = out:Cross(UP), label = label })
+
+        -- "Sit & Play" prompt (BlackjackHUD hides these while you're seated)
+        local prompt = Instance.new("ProximityPrompt")
+        prompt.Name = "BlackjackJoinPrompt"
+        prompt.ActionText = "Sit & Play"
+        prompt.ObjectText = "Blackjack"
+        prompt.HoldDuration = 0
+        prompt.MaxActivationDistance = 8
+        prompt.RequiresLineOfSight = false
+        prompt.Parent = s
+        prompt.Triggered:Connect(function(plr)
+            local humanoid = plr.Character and plr.Character:FindFirstChildOfClass("Humanoid")
+            if humanoid and humanoid.Health > 0 and not s.Occupant and not humanoid.SeatPart then
+                s:Sit(humanoid)
+            end
+        end)
+        s:GetPropertyChangedSignal("Occupant"):Connect(function()
+            prompt.Enabled = s.Occupant == nil
+        end)
     end
 
     -- Dealer: on the opposite side of the table from the players
@@ -449,6 +471,37 @@ local function updateLabel(label, name, cards, extra)
     label.TextColor3 = shown > 21 and Color3.fromRGB(255, 90, 90) or Color3.new(1, 1, 1)
 end
 
+-- Everything the on-screen hands need. The dealer's hidden card is sent as
+-- { h = true } with no rank, so nobody can peek at it.
+local function handData(cards)
+    local list, hidden = {}, false
+    for _, c in ipairs(cards) do
+        if c.hidden then
+            hidden = true
+            table.insert(list, { h = true })
+        else
+            table.insert(list, { r = c.rank, s = c.suit })
+        end
+    end
+    return list, hidden
+end
+local function sendHands(t, players, dealer, turnId)
+    local dealerCards, dealerHidden = handData(dealer.cards)
+    local list = {}
+    for _, p in ipairs(players) do
+        table.insert(list, {
+            userId = p.player.UserId, name = p.player.DisplayName,
+            cards = (handData(p.hand.cards)), total = handTotal(p.hand.cards),
+            bet = p.hand.bet, status = p.status or "",
+        })
+    end
+    broadcast(t, "hands", {
+        dealer = { cards = dealerCards, total = handTotal(dealer.cards), hidden = dealerHidden, status = dealer.status or "" },
+        players = list,
+        turn = turnId,
+    })
+end
+
 local function runTable(t)
     while true do
         if #seatedPlayers(t) == 0 then
@@ -505,9 +558,12 @@ local function runTable(t)
             for _, p in ipairs(players) do
                 dealCard(t, p.hand, p.info.spot, p.info.tangent, -p.info.out, true)
                 updateLabel(p.info.label, p.player.DisplayName, p.hand.cards, "Bet " .. p.hand.bet)
+                p.status = isBlackjack(p.hand.cards) and "BLACKJACK!" or ""
+                sendHands(t, players, dealer)
             end
             dealCard(t, dealer, t.dealerSpot, dealerTangent, -t.dealerDir, round == 1)
             updateLabel(t.dealerLabel, "Dealer", dealer.cards)
+            sendHands(t, players, dealer)
         end
         local dealerHasBlackjack = handTotal({ dealer.cards[1], { rank = dealer.cards[2].rank } }) == 21
 
@@ -519,6 +575,7 @@ local function runTable(t)
                         kind = "player", userId = p.player.UserId, name = p.player.DisplayName,
                         focus = p.info.spot, seatPos = p.info.seat.Position, time = TURN_TIME,
                     })
+                    sendHands(t, players, dealer, p.player.UserId)
                     while true do
                         t.awaiting, t.action = p.player, nil
                         local turnEnd = os.clock() + TURN_TIME
@@ -532,6 +589,8 @@ local function runTable(t)
                             dealCard(t, p.hand, p.info.spot, p.info.tangent, -p.info.out, true)
                             local total = handTotal(p.hand.cards)
                             updateLabel(p.info.label, p.player.DisplayName, p.hand.cards, total > 21 and "BUST" or ("Bet " .. p.hand.bet))
+                            p.status = total > 21 and "BUST" or ""
+                            sendHands(t, players, dealer, p.player.UserId)
                             if total >= 21 then
                                 break
                             end
@@ -539,6 +598,8 @@ local function runTable(t)
                             p.hand.bet *= 2
                             dealCard(t, p.hand, p.info.spot, p.info.tangent, -p.info.out, true)
                             updateLabel(p.info.label, p.player.DisplayName, p.hand.cards, "Bet " .. p.hand.bet)
+                            p.status = handTotal(p.hand.cards) > 21 and "BUST" or "DOUBLED"
+                            sendHands(t, players, dealer, p.player.UserId)
                             break
                         else
                             break
@@ -556,6 +617,7 @@ local function runTable(t)
         hole.hidden = false
         setCardFace(hole.part, hole, true)
         updateLabel(t.dealerLabel, "Dealer", dealer.cards)
+        sendHands(t, players, dealer)
         local anyoneLeft = false
         for _, p in ipairs(players) do
             if handTotal(p.hand.cards) <= 21 and not isBlackjack(p.hand.cards) then
@@ -564,13 +626,18 @@ local function runTable(t)
         end
         while anyoneLeft and handTotal(dealer.cards) < 17 do
             updateLabel(t.dealerLabel, "Dealer", dealer.cards, "thinking...")
+            dealer.status = "thinking..."
+            sendHands(t, players, dealer)
             task.wait(DEALER_DRAW_DELAY)
             dealCard(t, dealer, t.dealerSpot, dealerTangent, -t.dealerDir, true)
             updateLabel(t.dealerLabel, "Dealer", dealer.cards)
+            dealer.status = ""
+            sendHands(t, players, dealer)
         end
         task.wait(1.2)
         local dealerTotal = handTotal(dealer.cards)
         updateLabel(t.dealerLabel, "Dealer", dealer.cards, dealerTotal > 21 and "BUST" or "STANDS")
+        dealer.status = dealerTotal > 21 and "BUST" or "STANDS"
 
         -- Pay out
         for _, p in ipairs(players) do
@@ -597,10 +664,12 @@ local function runTable(t)
                 Bank.add(p.player, payout)
             end
             updateLabel(p.info.label, p.player.DisplayName, p.hand.cards, text)
+            p.status = text
             if p.player.Parent then
                 remote:FireClient(p.player, "result", { text = text, delta = payout - bet })
             end
         end
+        sendHands(t, players, dealer)
 
         task.wait(4.5)
         broadcast(t, "roundEnd", {})

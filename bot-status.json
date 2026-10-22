@@ -3,10 +3,10 @@
   "last_updated": "2026-10-21T00:00:00-05:00",
   "updated_at": "2026-10-21T00:00:00-05:00",
   "status": "healthy",
-  "summary": "Blackjack switched to James's v3 multiplayer tables (seats, turns, dealer NPC)",
+  "summary": "Blackjack: James's on-screen HUD v3 (cards on screen, chip bets, guide) + server hands feed",
   "urgent": [],
   "needs_james": [
-    "PLAYTEST blackjack v3 - ideally with 2 players (Test > Clients and Servers). Sit in a blackjack chair: tutorial opens, BET within 10s, camera swings to each player's turn then behind the dealer. Check chips go down/up in the chip HUD and the dealer NPC stands on the floor behind the table. Old system is only disabled (BlackjackTables, BlackjackClient, BlackjackTurnCamera) if you want it back.",
+    "PLAYTEST blackjack (2 players if possible): walk up to a chair -> 'Sit & Play' prompt; sit -> guide opens; tap chips + DEAL; your cards show in YOUR HAND at the bottom, dealer's at the top, other players on the right. Camera swings per turn, characters near the table fade. H = guide, C = camera, LEAVE TABLE stands you up.",
     "PLAYTEST. Nothing this session was verified in-game - playtest log capture still returns nothing and screenshots come back black, so everything was verified by querying coordinates instead. Specifically worth watching: whether loading actually feels faster now StreamingEnabled is on, whether city traffic and pedestrians animate, and whether the roulette wheel still visibly spins when you bet.",
     "Lighting.Technology is not readable from the plugin sandbox. If it is set to Future, switch it to ShadowMap in the Properties panel - likely the single biggest remaining FPS win.",
     "StreamingMinRadius / StreamingTargetRadius are not scriptable in this Studio build. They are on Roblox defaults; tune them in the Workspace Properties panel if streaming pops in too late.",
@@ -42,7 +42,8 @@
     "BlackjackTutorial replaced with James's design (picture cards, tips, ring, head arrow), hooked to BlackjackRemote; H key moved to T (H is Hit); SPLIT removed (server has no split).",
     "BlackjackTurnCamera: James's whose-turn camera, rewired from a seat/turn server that doesn't exist to BlackjackTables' State events; its duplicate bet/action HUD dropped.",
     "BlackjackTurnCamera v2: James's orbit swing around the table centre, betting starts from your seat, dealer's turn views from behind the dealer; waits out BlackjackClient's sit-down camera move so they don't fight.",
-    "Blackjack v3 installed: BlackjackV3 (server), BlackjackHUD (James's v2 camera+buttons, verbatim), BlackjackTutorial (James's original, SPLIT removed). Fixes: chips via _G.CasinoBank (v3 creating leaderstats would have wiped saved balances), no auto-bet/free refill (James's call), dealer-side stool excluded + hidden at runtime, tutorial distance check fixed for the tables' sideways bounding box, tutorial 10s full-place rescan replaced."
+    "Blackjack v3 installed: BlackjackV3 (server), BlackjackHUD (James's v2 camera+buttons, verbatim), BlackjackTutorial (James's original, SPLIT removed). Fixes: chips via _G.CasinoBank (v3 creating leaderstats would have wiped saved balances), no auto-bet/free refill (James's call), dealer-side stool excluded + hidden at runtime, tutorial distance check fixed for the tables' sideways bounding box, tutorial 10s full-place rescan replaced.",
+    "BlackjackHUD v3 (James): on-screen dealer/your/others hands, chip-button betting, built-in guide, LEAVE TABLE, character fade. Server now sends 'hands' (hidden card sent without its rank) and adds a 'Sit & Play' BlackjackJoinPrompt per player seat. Old BlackjackTutorial kept only for the YOU arrow + gold ring (its guide window off, SHOW_TUTORIAL_WINDOW)."
   ],
   "notes": [
     "Verification pattern that works here: query coordinates, never screenshots (they come back black) and never playtest logs (capture returns nothing). Rotation-aware AABBs matter - naive Position +/- Size/2 is badly wrong for rotated cylinders and has produced false alarms twice.",

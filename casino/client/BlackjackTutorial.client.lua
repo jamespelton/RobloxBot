@@ -2,8 +2,11 @@
 -- James's tutorial for the v3 seat-based blackjack (BlackjackV3 + BlackjackHUD).
 -- Casino changes from the original: SPLIT taken out (the table doesn't do
 -- splits), and line breaks built with NL (the Studio bridge mangles backslash-n).
+-- Since BlackjackHUD v3 (which has its own How to Play guide on H), this script
+-- only draws the YOU arrow and the gold ring; its guide window is switched off.
 -- Settings:
-local AUTO_OPEN = true          -- open the tutorial the first time you sit at a blackjack table
+local SHOW_TUTORIAL_WINDOW = false -- true brings back this script's own guide + button
+local AUTO_OPEN = SHOW_TUTORIAL_WINDOW -- open the tutorial the first time you sit at a blackjack table
 local NEAR_DISTANCE = 8         -- how close you need to be to a table for the arrow and button
 local ARROW_COLOR = Color3.fromRGB(255, 210, 80)
 
@@ -448,7 +451,7 @@ RunService.RenderStepped:Connect(function()
     local seated = seat ~= nil and nearby ~= nil and distance <= 5
     local close = nearby ~= nil and distance <= NEAR_DISTANCE
 
-    helpButton.Visible = close or seated
+    helpButton.Visible = SHOW_TUTORIAL_WINDOW and (close or seated)
     if not (close or seated) and panel.Visible then
         closeTutorial()
     end
