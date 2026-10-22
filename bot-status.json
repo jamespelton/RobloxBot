@@ -1,11 +1,12 @@
 {
   "bot": "Rex (Roblox)",
-  "last_updated": "2026-10-15T00:00:00-05:00",
-  "updated_at": "2026-10-15T00:00:00-05:00",
+  "last_updated": "2026-10-21T00:00:00-05:00",
+  "updated_at": "2026-10-21T00:00:00-05:00",
   "status": "healthy",
-  "summary": "Casino venue built out: rooftop, city skyline, interior, traffic, chairs, roulette tables",
+  "summary": "Blackjack: how-to-play tutorial + gold arrow marking the seated player's side",
   "urgent": [],
   "needs_james": [
+    "PLAYTEST blackjack: sit at a table - check the 6-page How to Play opens, the gold arrow + YOU tag sit on your side (to the left of your cards), DEALER tag is across. Tunables in BlackjackTutorial CFG (ArrowSide, ArrowHeight, ArrowSize).",
     "PLAYTEST. Nothing this session was verified in-game - playtest log capture still returns nothing and screenshots come back black, so everything was verified by querying coordinates instead. Specifically worth watching: whether loading actually feels faster now StreamingEnabled is on, whether city traffic and pedestrians animate, and whether the roulette wheel still visibly spins when you bet.",
     "Lighting.Technology is not readable from the plugin sandbox. If it is set to Future, switch it to ShadowMap in the Properties panel - likely the single biggest remaining FPS win.",
     "StreamingMinRadius / StreamingTargetRadius are not scriptable in this Studio build. They are on Roblox defaults; tune them in the Workspace Properties panel if streaming pops in too late.",
@@ -38,15 +39,7 @@
     "roulette_tables_rebuilt": 2
   },
   "session_changes": [
-    "GrandRooftop: 2,530-part rooftop deck - pool, cabanas, sky bar, hot tub, glass dome, helipad, mechanical yard, garden terrace. Fixed its measure-then-delete ordering (it measured the roof from parts its own sweep removed), moved the blinker loop to a child script, and hung the string lights on a real cable instead of leaving the bulbs floating.",
-    "CitySkyline: 38 tower blocks ringing the venue. Ground detection was rewritten - the original would have errored out, and the naive fix would have built the city on the casino roof. Grew the ground plate 900x800 -> 1800x1400 to make room (original size stashed as attributes on the part).",
-    "CityPerformance: StreamingEnabled on (was off, so all ~49k parts replicated before the player could move), shadow casters cut 35,951 -> 3,303, all light shadow maps off, city blocks set to Atomic streaming.",
-    "CityInfill: 53 low-rise blocks filling the bare ~255-stud ring around the casino, so the venue sits in the city rather than beside it. Measured first that shrinking CASINO_GAP could not do this - 40 to 0 only moved 38 blocks to 42.",
-    "Parking lot widened 226 -> 366 studs (64 -> 120 spaces) to fill more of the 620-wide apron; cars 29 -> 40.",
-    "GrandInterior: coffered ceiling, 58 wall panels, 10 column treatments, floor inlay. Its floor detection was 47 studs out - it found the top of the ceiling slab, so the whole script would have decorated the attic.",
-    "CityDataPublisher + CityTraffic: 30 cars and 60 pedestrians. The traffic script depended on ReplicatedStorage.CityData, which nothing created, so it would have waited 180s and silently returned. Also fixed a cached CurrentCamera and ~870 parts heaped at the origin.",
-    "LuxuryChairs: 72 chairs at the game tables. The original would have built 360 (one per part, not per chair) and seated players on their side.",
-    "LuxuryRoulette: both roulette tables rebuilt. The original hid the parts TableGames.spinWheel rotates, so the wheel would have spun invisibly - added a WheelMirror that copies the rotation onto the new rotor, verified exact to 0.00000 rad."
+    "BlackjackTutorial LocalScript (casino/client): step-by-step tutorial on first seat each visit, re-open button above the panel, and a bobbing neon arrow + YOU/DEALER tags only the seated player sees."
   ],
   "notes": [
     "Verification pattern that works here: query coordinates, never screenshots (they come back black) and never playtest logs (capture returns nothing). Rotation-aware AABBs matter - naive Position +/- Size/2 is badly wrong for rotated cylinders and has produced false alarms twice.",
@@ -55,5 +48,5 @@
     "Bash heredocs in this environment choke on large Lua payloads (apostrophes break the quoting). Use the Write tool for whole files and Python inline for surgical patches.",
     "Two pre-existing modelling bugs found and reported: poker and roulette chair backs were on the table side, so those chairs already faced away from their own table; and four WallSign neons were stacked back-to-front behind the wall."
   ],
-  "next_run_needed": "2026-10-16"
+  "next_run_needed": "2026-10-22"
 }
