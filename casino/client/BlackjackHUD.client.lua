@@ -1,8 +1,7 @@
--- BLACKJACK SCREEN + CAMERA + TUTORIAL (LocalScript in StarterPlayer > StarterPlayerScripts)
--- James's clean HUD with the picture-card tutorial. Casino changes: tutorial line
--- breaks use NL (the Studio bridge mangles backslash-n), Sit & Play prompts are
--- hidden while you're seated, and the round chip buttons set their existing
--- UICorner instead of adding a second.
+-- BLACKJACK SCREEN + CAMERA + TUTORIAL v2 (LocalScript in StarterPlayer > StarterPlayerScripts)
+-- Casino changes: tutorial line breaks use NL (the Studio bridge mangles backslash-n),
+-- and the round chip buttons set their existing UICorner instead of adding a second.
+-- (Sit & Play prompts are removed by BlackjackTableAdjust - you click a chair to sit.)
 local MIN_BET, MAX_BET = 10, 500
 local DEFAULT_BET = 50
 local CHIP_VALUES = { 10, 25, 50, 100, 250 }
@@ -127,6 +126,7 @@ local toastText = text({ Size = UDim2.fromScale(1, 1), Font = Enum.Font.GothamBo
 
 -- Chips (top left)
 local chipsPanel = panel({ Position = UDim2.fromOffset(16, 12), Size = UDim2.fromOffset(170, 40) }, gui)
+chipsPanel.Visible = false
 text({ Position = UDim2.fromOffset(14, 0), Size = UDim2.new(0, 60, 1, 0), Text = "CHIPS", TextSize = 12, TextColor3 = MUTED, TextXAlignment = Enum.TextXAlignment.Left }, chipsPanel)
 local chipsText = text({ Position = UDim2.fromOffset(60, 0), Size = UDim2.new(1, -74, 1, 0), Font = Enum.Font.GothamBold, TextSize = 18, TextColor3 = GOLD, TextXAlignment = Enum.TextXAlignment.Right }, chipsPanel)
 
@@ -277,15 +277,12 @@ local PAGES = {
     {
         title = "THE GOAL",
         cards = { { "K", false }, { "A", true }, "=", "21!" },
-        text = "Get a hand that is " .. Y .. "closer to 21" .. E .. " than the dealer's hand, " .. Y .. "without going over 21" .. E .. "." .. NL
-            .. "Going over 21 is called a " .. Y .. "BUST" .. E .. " and you lose that hand.",
+        text = "Get a hand that is " .. Y .. "closer to 21" .. E .. " than the dealer's hand, " .. Y .. "without going over 21" .. E .. "." .. NL .. "Going over 21 is called a " .. Y .. "BUST" .. E .. " and you lose that hand.",
     },
     {
         title = "CARD VALUES",
         cards = { { "7", true }, "= 7", { "K", false }, "= 10", { "A", true }, "= 1 or 11" },
-        text = Y .. "2 to 10" .. E .. " are worth their number." .. NL
-            .. Y .. "J, Q and K" .. E .. " are each worth 10." .. NL
-            .. "An " .. Y .. "Ace" .. E .. " is worth 11, or 1 if 11 would make you bust.",
+        text = Y .. "2 to 10" .. E .. " are worth their number." .. NL .. Y .. "J, Q and K" .. E .. " are each worth 10." .. NL .. "An " .. Y .. "Ace" .. E .. " is worth 11, or 1 if 11 would make you bust.",
     },
     {
         title = "PLACING A BET",
@@ -295,29 +292,22 @@ local PAGES = {
     {
         title = "YOUR CHOICES",
         cards = { { "9", false }, { "5", true }, "= 14", "?" },
-        text = Y .. "HIT" .. E .. " - take another card." .. NL
-            .. Y .. "STAND" .. E .. " - keep your total and end your turn." .. NL
-            .. Y .. "DOUBLE" .. E .. " - double your bet and get exactly one more card.",
+        text = Y .. "HIT" .. E .. " - take another card." .. NL .. Y .. "STAND" .. E .. " - keep your total and end your turn." .. NL .. Y .. "DOUBLE" .. E .. " - double your bet and get exactly one more card.",
     },
     {
         title = "THE DEALER",
         cards = { { "10", true }, { "", false, true }, "→", { "10", true }, { "7", false }, "= 17" },
-        text = "The dealer has one card " .. Y .. "face down" .. E .. ". After every player finishes, the dealer flips it over." .. NL
-            .. "The dealer " .. Y .. "must hit until 17 or more" .. E .. ". If the dealer busts, everyone still in wins!",
+        text = "The dealer has one card " .. Y .. "face down" .. E .. ". After every player finishes, the dealer flips it over." .. NL .. "The dealer " .. Y .. "must hit until 17 or more" .. E .. ". If the dealer busts, everyone still in wins!",
     },
     {
         title = "HOW YOU WIN",
         cards = { { "A", false }, { "Q", true }, "= BLACKJACK" },
-        text = Y .. "Beat the dealer" .. E .. ": you win the same as your bet (1 to 1)." .. NL
-            .. Y .. "Blackjack" .. E .. " (an Ace + a 10-value card as your first two cards): pays 3 to 2." .. NL
-            .. Y .. "Tie" .. E .. ": you get your bet back.   " .. Y .. "Bust" .. E .. ": you lose your bet.",
+        text = Y .. "Beat the dealer" .. E .. ": you win the same as your bet (1 to 1)." .. NL .. Y .. "Blackjack" .. E .. " (an Ace + a 10-value card as your first two cards): pays 3 to 2." .. NL .. Y .. "Tie" .. E .. ": you get your bet back.   " .. Y .. "Bust" .. E .. ": you lose your bet.",
     },
     {
         title = "BEGINNER TIPS",
         cards = { { "6", false }, { "5", true }, "= 11", "→", "DOUBLE!" },
-        text = "• " .. Y .. "Stand" .. E .. " on 17 or more.   • " .. Y .. "Hit" .. E .. " on 11 or less." .. NL
-            .. "• " .. Y .. "Double" .. E .. " when you have 11." .. NL
-            .. "• Press " .. Y .. "C" .. E .. " to switch cameras and " .. Y .. "H" .. E .. " to open this guide.",
+        text = "• " .. Y .. "Stand" .. E .. " on 17 or more.   • " .. Y .. "Hit" .. E .. " on 11 or less." .. NL .. "• " .. Y .. "Double" .. E .. " when you have 11." .. NL .. "• Press " .. Y .. "C" .. E .. " to switch cameras and " .. Y .. "H" .. E .. " to open this guide.",
     },
 }
 
@@ -486,10 +476,12 @@ local function showToast(message, delta)
 end
 
 ----------------------------------------------------------------
--- Camera: high view that swings around the table
+-- Camera
+--   Player's turn: from behind their chair, looking at the dealer
+--   Dealer's turn: from behind the dealer, looking at the seats
 ----------------------------------------------------------------
 local gameCamera = true -- press C to switch
-local tableCenter
+local tableCenter, dealerSpot
 local lastShot, shotKey, swing
 
 local function stopSwing()
@@ -541,21 +533,45 @@ local function restoreCamera()
         camera.CameraSubject = humanoid
     end
 end
--- High above and behind a chair, looking down at that seat's cards
-local function seatView(seatPos, spot)
+-- From behind a chair, looking across the table at the dealer
+local function seatView(seatPos)
     local outward = flat(seatPos - tableCenter)
     outward = outward.Magnitude > 0.01 and outward.Unit or V(0, 0, 1)
-    return seatPos + outward * 5 + UP * 11, spot:Lerp(tableCenter, 0.3)
+    local eye = seatPos + outward * 3.5 + UP * 6.5
+    local target
+    if dealerSpot then
+        target = dealerSpot + UP * 2
+    else
+        target = tableCenter - outward * 4 + UP * 1.5 -- best guess until the dealer has had a turn
+    end
+    return eye, target
 end
 local function mySeat()
     local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
     return humanoid and humanoid.SeatPart
 end
 
--- Hide your own character (and fade others) while the table camera is on
+-- Hide your character, fade other players, and fade anything right in front of the camera
 local faded = false
+local nearFaded = {}
 RunService.RenderStepped:Connect(function()
     local on = gui.Enabled and camera.CameraType == Enum.CameraType.Scriptable
+    local now = {}
+    if on then
+        for _, p in ipairs(workspace:GetPartBoundsInRadius(camera.CFrame.Position, 4)) do
+            if math.max(p.Size.X, p.Size.Y, p.Size.Z) < 12 then
+                p.LocalTransparencyModifier = 0.8
+                now[p] = true
+            end
+        end
+    end
+    for p in pairs(nearFaded) do
+        if not now[p] then
+            p.LocalTransparencyModifier = 0
+        end
+    end
+    nearFaded = now
+
     if not on and not faded then
         return
     end
@@ -630,8 +646,8 @@ remote.OnClientEvent:Connect(function(kind, data)
         if changed then
             startTimer(data.time)
         end
-        if seat and tableCenter and data.mySpot then
-            shoot("mine", seatView(seat.Position, data.mySpot))
+        if seat and tableCenter then
+            shoot("mine", seatView(seat.Position))
         end
     elseif kind == "turn" then
         phase = "playing"
@@ -643,12 +659,15 @@ remote.OnClientEvent:Connect(function(kind, data)
                 statusText.Text = data.name .. "'s turn"
                 setMode("none")
             end
-            if tableCenter then
-                shoot("player" .. tostring(data.userId), seatView(data.seatPos, data.focus))
+            if tableCenter and data.seatPos then
+                shoot("player" .. tostring(data.userId), seatView(data.seatPos))
             end
         else
             statusText.Text = "Dealer's turn"
             setMode("none")
+            if data.focus then
+                dealerSpot = data.focus -- remember where the dealer is for the player views
+            end
             if tableCenter then
                 shoot("dealer", data.eye, data.look)
             end
@@ -673,35 +692,17 @@ remote.OnClientEvent:Connect(function(kind, data)
 end)
 
 ----------------------------------------------------------------
--- Sit & Play prompts: hidden while you're seated, and on chairs already taken
-----------------------------------------------------------------
-local joinPrompts = {}
-local function trackPrompt(d)
-    if d:IsA("ProximityPrompt") and d.Name == "BlackjackJoinPrompt" then
-        table.insert(joinPrompts, d)
-    end
-end
-for _, d in ipairs(workspace:GetDescendants()) do
-    trackPrompt(d)
-end
-workspace.DescendantAdded:Connect(trackPrompt)
-
-----------------------------------------------------------------
 -- Every frame: chips count, and close everything when you stand up
 ----------------------------------------------------------------
 RunService.Heartbeat:Connect(function()
     chipsText.Text = commas(myChips())
-    local seated = mySeat() ~= nil
-    for _, prompt in ipairs(joinPrompts) do
-        local seat = prompt.Parent
-        prompt.Enabled = not seated and not (seat and seat:IsA("Seat") and seat.Occupant)
-    end
-    if gui.Enabled and not seated then
+    if gui.Enabled and not mySeat() then
         gui.Enabled = false
         tutGui.Enabled = false
         closeTutorial()
         setMode("none")
         phase = ""
+        dealerSpot = nil
         restoreCamera()
     end
 end)
