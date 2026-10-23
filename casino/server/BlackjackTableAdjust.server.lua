@@ -1,15 +1,14 @@
--- BLACKJACK TABLE + CHAIR ADJUST v2 (Script in ServerScriptService)
+-- BLACKJACK TABLE + CHAIR ADJUST v3 (Script in ServerScriptService)
 -- Settings:
 local TABLE_RAISE = 1.2   -- how many studs to move the table UP
 local CHAIR_DROP = 0.8    -- how many studs to move the chairs DOWN
-local MAX_TURN = 20       -- most a chair can be turned left or right (degrees)
-local MAX_SHIFT = 0.6     -- most a chair can be nudged sideways (studs)
-local MAX_PUSH = 0.9      -- most a chair can be pushed back from the table (studs)
-local MAX_TILT = 2        -- tiny lean so they don't look perfect (degrees)
+local MAX_TURN = 12       -- most a chair can be turned left or right (degrees)
+local MAX_SHIFT = 0.4     -- most a chair can be nudged sideways (studs)
+local MAX_PUSH = 0.8      -- most a chair can be pushed back from the table (studs)
+local MAX_TILT = 1.5      -- tiny lean so they don't look perfect (degrees)
+local GAP = 0.35          -- smallest space allowed between two chairs (studs)
 local REMOVE_SIT_PROMPT = true -- removes the "Sit & Play" button
 local CLICK_DISTANCE = 12 -- how close you need to be to click a chair and sit
-
-local Players = game:GetService("Players")
 
 local V = Vector3.new
 local function flat(v)
@@ -108,26 +107,77 @@ for _, t in ipairs(tables) do
 end
 
 ----------------------------------------------------------------
--- Lower each chair and turn / nudge / lean it (same look every time you play)
+-- Pick a messy position for each chair (same look every time you play)
 ----------------------------------------------------------------
-local moved = 0
 for i, info in ipairs(allSeats) do
     local seatPos = info.seat.Position
     local rng = Random.new(math.floor(seatPos.X * 7 + seatPos.Z * 13) + i)
-    local outward = flat(seatPos - info.table.cf.Position)
+    local center = flat(info.table.cf.Position)
+    local outward = flat(seatPos) - center
     outward = outward.Magnitude > 0.01 and outward.Unit or V(0, 0, 1)
     local sideways = outward:Cross(V(0, 1, 0))
 
-    -- Every other chair turns the opposite way, so no two neighbors look the same
-    local direction = (i % 2 == 0) and 1 or -1
-    local turn = math.rad(direction * rng:NextNumber(MAX_TURN * 0.35, MAX_TURN))
-    local tiltX = math.rad(rng:NextNumber(-MAX_TILT, MAX_TILT))
-    local tiltZ = math.rad(rng:NextNumber(-MAX_TILT, MAX_TILT))
-    local shift = sideways * rng:NextNumber(-MAX_SHIFT, MAX_SHIFT) + outward * rng:NextNumber(0.2, MAX_PUSH)
+    -- How wide this chair is (a circle around the seat that covers every part)
+    local radius = 1
+    for _, p in ipairs(info.parts) do
+        local reach = flat(p.Position - seatPos).Magnitude + math.max(p.Size.X, p.Size.Z) * 0.4
+        radius = math.max(radius, reach)
+    end
+    info.radius = math.min(radius, 2.6)
 
-    local move = CFrame.new(seatPos + shift - V(0, CHAIR_DROP, 0))
-        * CFrame.Angles(tiltX, turn, tiltZ)
-        * CFrame.new(-seatPos)
+    local direction = (i % 2 == 0) and 1 or -1
+    info.turn = math.rad(direction * rng:NextNumber(MAX_TURN * 0.3, MAX_TURN))
+    info.tiltX = math.rad(rng:NextNumber(-MAX_TILT, MAX_TILT))
+    info.tiltZ = math.rad(rng:NextNumber(-MAX_TILT, MAX_TILT))
+    info.start = seatPos
+    info.center = center
+    info.minFromTable = flat(seatPos - center).Magnitude
+    info.pos = flat(seatPos) + sideways * rng:NextNumber(-MAX_SHIFT, MAX_SHIFT) + outward * rng:NextNumber(0.15, MAX_PUSH)
+end
+
+----------------------------------------------------------------
+-- Slide chairs apart until none of them overlap
+----------------------------------------------------------------
+local settled = false
+for _ = 1, 60 do
+    local anyOverlap = false
+    for a = 1, #allSeats do
+        for b = a + 1, #allSeats do
+            local A, B = allSeats[a], allSeats[b]
+            if A.table == B.table then
+                local between = B.pos - A.pos
+                local distance = between.Magnitude
+                local needed = A.radius + B.radius + GAP
+                if distance < needed then
+                    anyOverlap = true
+                    local push = (distance > 0.01 and between.Unit or (A.pos - A.center):Cross(V(0, 1, 0)).Unit) * ((needed - distance) / 2 + 0.01)
+                    A.pos -= push
+                    B.pos += push
+                end
+            end
+        end
+    end
+    -- Never let a chair slide into the table
+    for _, info in ipairs(allSeats) do
+        local fromTable = info.pos - info.center
+        if fromTable.Magnitude < info.minFromTable then
+            info.pos = info.center + fromTable.Unit * info.minFromTable
+        end
+    end
+    if not anyOverlap then
+        settled = true
+        break
+    end
+end
+
+----------------------------------------------------------------
+-- Move every chair to its new spot
+----------------------------------------------------------------
+local moved = 0
+for _, info in ipairs(allSeats) do
+    local seatPos = info.start
+    local target = V(info.pos.X, seatPos.Y - CHAIR_DROP, info.pos.Z)
+    local move = CFrame.new(target) * CFrame.Angles(info.tiltX, info.turn, info.tiltZ) * CFrame.new(-seatPos)
     for _, p in ipairs(info.parts) do
         p.CFrame = move * p.CFrame
     end
@@ -158,4 +208,4 @@ if REMOVE_SIT_PROMPT then
     end
 end
 
-print("[Blackjack] Raised " .. #tables .. " table(s) and adjusted " .. moved .. " chair(s)")
+print("[Blackjack] Raised " .. #tables .. " table(s) and adjusted " .. moved .. " chair(s)" .. (settled and ", no overlaps" or ", some chairs may still touch"))
