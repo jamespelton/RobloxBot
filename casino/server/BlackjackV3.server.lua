@@ -255,7 +255,7 @@ for _, s in ipairs(workspace:GetDescendants()) do
         local best, bestDistance
         for _, t in ipairs(tableList) do
             local d = flat(s.Position - t.cf.Position).Magnitude
-            local reach = math.max(t.size.X, t.size.Z) / 2 + 6
+            local reach = math.max(t.size.X, t.size.Y, t.size.Z) / 2 + 6 -- table boxes are rotated: use the biggest side
             if d <= reach and math.abs(s.Position.Y - t.cf.Position.Y) < 8 and (not bestDistance or d < bestDistance) then
                 best, bestDistance = t, d
             end

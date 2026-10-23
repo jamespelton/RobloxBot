@@ -1,14 +1,16 @@
--- BLACKJACK TABLE + CHAIR ADJUST v4 (Script in ServerScriptService)
--- Chairs go in a curve around the table, facing it.
+-- BLACKJACK TABLE + CHAIR ADJUST v5 (Script in ServerScriptService)
+-- Gives every blackjack table 8 seats and places them in a curve around it.
 -- Settings:
+local SEATS_PER_TABLE = 8 -- how many players can play at one table
 local TABLE_RAISE = 1.2   -- how many studs to move the table UP
 local CHAIR_DROP = 0.8    -- how many studs to move the chairs DOWN
-local ARC_ANGLE = 150     -- how wide the curve of chairs is (degrees). 180 = half circle
+local ARC_ANGLE = 170     -- how wide the curve of chairs is (degrees). 180 = half circle
 local CHAIR_OUT = 2.0     -- how far each seat sits from the table edge (studs)
 local MAX_TURN = 6        -- small random turn so they don't look perfect (degrees)
-local MAX_SHIFT = 0.25    -- small random nudge (studs)
+local MAX_SHIFT = 0.2     -- small random nudge (studs)
 local MAX_TILT = 1.5      -- tiny lean (degrees)
-local GAP = 0.35          -- smallest space allowed between two chairs (studs)
+local GAP = 0.25          -- smallest space allowed between two chairs (studs)
+local PLAYER_SIDE = 1.0   -- every chair stays at least this far on the players' side (the game hides seats on the dealer's side)
 local REMOVE_SIT_PROMPT = true -- removes the "Sit & Play" button
 local CLICK_DISTANCE = 12 -- how close you need to be to click a chair and sit
 
@@ -55,7 +57,7 @@ local tables = {}
 for _, m in ipairs(workspace:GetDescendants()) do
     if m:IsA("Model") then
         local name = string.lower(m.Name)
-        if string.find(name, "blackjack") and not string.find(name, "_chairs") and not string.find(name, "blackjackgame") then
+        if string.find(name, "blackjack") and not string.find(name, "_chairs") and not string.find(name, "blackjackgame") and not string.find(name, "extra") then
             local cf, size = worldBox(m)
             table.insert(tables, { model = m, cf = cf, size = size, seats = {}, chairs = {} })
         end
@@ -168,6 +170,57 @@ for _, chair in ipairs(allChairs) do
 end
 
 ----------------------------------------------------------------
+-- Add extra chairs (copies of the ones already there) until each table has enough
+----------------------------------------------------------------
+local extraFolder = workspace:FindFirstChild("ExtraBlackjackChairs") or Instance.new("Folder")
+extraFolder.Name = "ExtraBlackjackChairs"
+extraFolder.Parent = workspace
+
+local function cleanCopy(c)
+    c.Anchored = true
+    for _, d in ipairs(c:GetDescendants()) do
+        if d:IsA("JointInstance") or d:IsA("WeldConstraint") then
+            d:Destroy()
+        end
+    end
+end
+
+local added = 0
+for _, t in ipairs(tables) do
+    local originals = table.clone(t.chairs)
+    local n = 0
+    while #originals > 0 and #t.chairs < SEATS_PER_TABLE do
+        n += 1
+        local original = originals[(n - 1) % #originals + 1]
+        local model = Instance.new("Model")
+        model.Name = "ExtraChair"
+        model.Parent = extraFolder
+        local copy = { table = t, parts = {}, start = original.start, radius = original.radius, forward = original.forward }
+        for _, p in ipairs(original.parts) do
+            local c = p:Clone()
+            cleanCopy(c)
+            c.Parent = model
+            table.insert(copy.parts, c)
+            if p == original.seat then
+                copy.seat = c
+            end
+        end
+        if not copy.seat then
+            local c = original.seat:Clone()
+            cleanCopy(c)
+            c.CFrame = original.seat.CFrame
+            c.Parent = model
+            table.insert(copy.parts, c)
+            copy.seat = c
+        end
+        copy.seat.Disabled = false
+        table.insert(t.chairs, copy)
+        table.insert(allChairs, copy)
+        added += 1
+    end
+end
+
+----------------------------------------------------------------
 -- Place the chairs in a curve around each table
 ----------------------------------------------------------------
 for _, t in ipairs(tables) do
@@ -206,13 +259,14 @@ for _, t in ipairs(tables) do
 
         local arc = math.rad(ARC_ANGLE)
         for i, chair in ipairs(chairs) do
-            local rng = Random.new(math.floor(chair.start.X * 7 + chair.start.Z * 13) + i)
+            local rng = Random.new(math.floor(chair.start.X * 7 + chair.start.Z * 13) + i * 31)
             local f = #chairs == 1 and 0.5 or (i - 1) / (#chairs - 1)
             local angle = -arc / 2 + arc * f
             local dir = (toPlayers * math.cos(angle) + right * math.sin(angle)).Unit
             local edge = edgeAt(dir)
-            chair.pos = edge + dir * (CHAIR_OUT + rng:NextNumber(0, 0.3)) + dir:Cross(UP) * rng:NextNumber(-MAX_SHIFT, MAX_SHIFT)
+            chair.pos = edge + dir * (CHAIR_OUT + rng:NextNumber(0, 0.25)) + dir:Cross(UP) * rng:NextNumber(-MAX_SHIFT, MAX_SHIFT)
             chair.center = center
+            chair.toPlayers = toPlayers
             chair.minFromTable = flat(edge - center).Magnitude + 1
             chair.facing = -dir
             chair.extraTurn = math.rad(rng:NextNumber(-MAX_TURN, MAX_TURN))
@@ -226,7 +280,7 @@ end
 -- Slide chairs apart until none of them overlap
 ----------------------------------------------------------------
 local settled = false
-for _ = 1, 60 do
+for _ = 1, 80 do
     local anyOverlap = false
     for a = 1, #allChairs do
         for b = a + 1, #allChairs do
@@ -250,6 +304,11 @@ for _ = 1, 60 do
             local fromTable = chair.pos - chair.center
             if fromTable.Magnitude < chair.minFromTable then
                 chair.pos = chair.center + fromTable.Unit * chair.minFromTable
+            end
+            -- ...or around to the dealer's side
+            local side = (chair.pos - chair.center):Dot(chair.toPlayers)
+            if side < PLAYER_SIDE then
+                chair.pos += chair.toPlayers * (PLAYER_SIDE - side)
             end
         end
     end
@@ -304,4 +363,4 @@ if REMOVE_SIT_PROMPT then
     end
 end
 
-print("[Blackjack] Raised " .. #tables .. " table(s) and placed " .. moved .. " chair(s) around them" .. (settled and "" or " (some chairs may still touch)"))
+print("[Blackjack] " .. #tables .. " table(s): added " .. added .. " chair(s), " .. moved .. " seats total" .. (settled and "" or " (some chairs may still touch)"))
