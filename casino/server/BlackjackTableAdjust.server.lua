@@ -1,4 +1,4 @@
--- BLACKJACK TABLES + CHAIRS + SOLO/MULTIPLAYER LOBBY v7 (Script in ServerScriptService)
+-- BLACKJACK TABLES + CHAIRS + SOLO/MULTIPLAYER LOBBY v8 (Script in ServerScriptService)
 -- Pairs with StarterPlayerScripts.BlackjackLobby (the menu). BlackjackV3 plays with whoever is seated.
 -- Settings:
 local SEATS_PER_TABLE = 8 -- most players at one table (extra chairs get hidden)
@@ -103,7 +103,8 @@ local function inTable(part)
 end
 
 for _, s in ipairs(workspace:GetDescendants()) do
-    if s:IsA("Seat") then
+    -- Only real chairs: skip seats built into the table itself (those put you in the middle)
+    if s:IsA("Seat") and not inTable(s) then
         local best, bestDistance
         for _, t in ipairs(tables) do
             local d = flat(s.Position - t.cf.Position).Magnitude
@@ -113,6 +114,15 @@ for _, s in ipairs(workspace:GetDescendants()) do
         end
         if best then
             table.insert(best.seats, s)
+        end
+    end
+end
+
+-- Lock any seats that are built into the tables so nobody gets stuck in the middle
+for _, t in ipairs(tables) do
+    for _, d in ipairs(t.model:GetDescendants()) do
+        if d:IsA("Seat") then
+            d.Disabled = true
         end
     end
 end
@@ -433,12 +443,18 @@ local function resetTable(t)
     updatePrompt(t)
 end
 
+-- Walk the player to an open chair and sit them in it (tries a few times)
 local function seatIn(player, chairs)
     local character = player.Character
     local humanoid = character and character:FindFirstChildOfClass("Humanoid")
     local root = character and character:FindFirstChild("HumanoidRootPart")
-    if not humanoid or not root or humanoid.Health <= 0 or humanoid.SeatPart then
+    if not humanoid or not root or humanoid.Health <= 0 then
         return false
+    end
+    for _, chair in ipairs(chairs) do
+        if humanoid.SeatPart == chair.seat then
+            return true -- already in one of these chairs
+        end
     end
     local best, bestDistance
     for _, chair in ipairs(chairs) do
@@ -449,18 +465,40 @@ local function seatIn(player, chairs)
             end
         end
     end
-    if best then
-        best.seat:Sit(humanoid)
-        return true
+    if not best then
+        return false
     end
-    return false
+    task.spawn(function()
+        for _ = 1, 3 do
+            if humanoid.SeatPart == best.seat then
+                return
+            end
+            if best.seat.Occupant and best.seat.Occupant ~= humanoid then
+                break
+            end
+            humanoid.Sit = false
+            if root.Anchored then
+                root.Anchored = false
+            end
+            task.wait(0.1)
+            root.CFrame = best.seat.CFrame + V(0, 3, 0)
+            task.wait(0.1)
+            best.seat:Sit(humanoid)
+            task.wait(0.5)
+        end
+        if humanoid.SeatPart ~= best.seat then
+            warn("[Blackjack] Could not seat " .. player.Name .. " in " .. best.seat:GetFullName())
+            lobbyRemote:FireClient(player, "message", { text = "Couldn't reach your seat - press E to try again" })
+        end
+    end)
+    return true
 end
 
 local function startTable(t, player, count)
     count = math.clamp(math.floor(count), 1, #t.chairs)
     t.mode = count == 1 and "solo" or "multi"
     t.active = pickSeats(t, count)
-    t.lastUsed = os.clock()
+    t.lastUsed = os.clock() + 3
     showOnly(t, t.active, true)
     seatIn(player, t.active)
     updatePrompt(t)
