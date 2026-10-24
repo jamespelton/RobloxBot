@@ -1,19 +1,21 @@
--- BLACKJACK TABLE + CHAIR ADJUST v5 (Script in ServerScriptService)
--- Gives every blackjack table 8 seats and places them in a curve around it.
+-- BLACKJACK TABLES + CHAIRS + SOLO/MULTIPLAYER LOBBY v7 (Script in ServerScriptService)
+-- Pairs with StarterPlayerScripts.BlackjackLobby (the menu). BlackjackV3 plays with whoever is seated.
 -- Settings:
-local SEATS_PER_TABLE = 8 -- how many players can play at one table
+local SEATS_PER_TABLE = 8 -- most players at one table (extra chairs get hidden)
+local IDLE_CHAIRS = 5     -- how many chairs show when nobody is playing
 local TABLE_RAISE = 1.2   -- how many studs to move the table UP
 local CHAIR_DROP = 0.8    -- how many studs to move the chairs DOWN
-local ARC_ANGLE = 170     -- how wide the curve of chairs is (degrees). 180 = half circle
+local ARC_ANGLE = 170     -- how wide the curve of chairs is (degrees)
 local CHAIR_OUT = 2.0     -- how far each seat sits from the table edge (studs)
 local MAX_TURN = 6        -- small random turn so they don't look perfect (degrees)
 local MAX_SHIFT = 0.2     -- small random nudge (studs)
 local MAX_TILT = 1.5      -- tiny lean (degrees)
 local GAP = 0.25          -- smallest space allowed between two chairs (studs)
 local PLAYER_SIDE = 1.0   -- every chair stays at least this far on the players' side (the game hides seats on the dealer's side)
-local REMOVE_SIT_PROMPT = true -- removes the "Sit & Play" button
-local CLICK_DISTANCE = 12 -- how close you need to be to click a chair and sit
+local EMPTY_RESET_TIME = 4 -- seconds a table must be empty before it resets
 
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local V = Vector3.new
 local UP = V(0, 1, 0)
 local function flat(v)
@@ -32,11 +34,15 @@ local function worldBox(model)
     return CFrame.new(cf.Position), V(along(V(1, 0, 0)), along(UP), along(V(0, 0, 1)))
 end
 
+local lobbyRemote = ReplicatedStorage:FindFirstChild("BlackjackLobbyRemote") or Instance.new("RemoteEvent")
+lobbyRemote.Name = "BlackjackLobbyRemote"
+lobbyRemote.Parent = ReplicatedStorage
+
 ----------------------------------------------------------------
--- Remove the "Sit & Play" button (you sit by clicking a chair instead)
+-- Remove the old "Sit & Play" button (the lobby has its own)
 ----------------------------------------------------------------
 local function removePrompt(d)
-    if REMOVE_SIT_PROMPT and d:IsA("ProximityPrompt") and (d.Name == "BlackjackJoinPrompt" or d.ActionText == "Sit & Play") then
+    if d:IsA("ProximityPrompt") and (d.Name == "BlackjackJoinPrompt" or d.ActionText == "Sit & Play") then
         task.defer(function()
             d:Destroy()
         end)
@@ -47,7 +53,31 @@ for _, d in ipairs(workspace:GetDescendants()) do
 end
 workspace.DescendantAdded:Connect(removePrompt)
 
--- Wait for the chair and table scripts to finish building (the blackjack game starts at 6 seconds)
+----------------------------------------------------------------
+-- Show / hide a chair
+----------------------------------------------------------------
+local function remember(o, prop)
+    local key = "Lobby_" .. prop
+    if o:GetAttribute(key) == nil then
+        o:SetAttribute(key, o[prop])
+    end
+    return o:GetAttribute(key)
+end
+local function showChair(chair, shown)
+    for _, p in ipairs(chair.parts) do
+        p.Transparency = shown and remember(p, "Transparency") or 1
+        p.CanCollide = shown and remember(p, "CanCollide") or false
+        p.CanQuery = shown and remember(p, "CanQuery") or false -- hidden chairs don't block clicks or the camera
+        for _, d in ipairs(p:GetDescendants()) do
+            if d:IsA("Decal") or d:IsA("Texture") then
+                d.Transparency = shown and remember(d, "Transparency") or 1
+            elseif d:IsA("SurfaceGui") or d:IsA("BillboardGui") or d:IsA("Light") or d:IsA("ParticleEmitter") then
+                d.Enabled = shown and remember(d, "Enabled") or false
+            end
+        end
+    end
+end
+
 task.wait(3)
 
 ----------------------------------------------------------------
@@ -59,7 +89,7 @@ for _, m in ipairs(workspace:GetDescendants()) do
         local name = string.lower(m.Name)
         if string.find(name, "blackjack") and not string.find(name, "_chairs") and not string.find(name, "blackjackgame") and not string.find(name, "extra") then
             local cf, size = worldBox(m)
-            table.insert(tables, { model = m, cf = cf, size = size, seats = {}, chairs = {} })
+            table.insert(tables, { id = #tables + 1, model = m, cf = cf, size = size, seats = {}, chairs = {}, spare = {} })
         end
     end
 end
@@ -109,7 +139,6 @@ for _, t in ipairs(tables) do
     end
 end
 
--- Find which parts belong to each chair (the parts closest to that seat)
 for _, p in ipairs(workspace:GetDescendants()) do
     if p:IsA("BasePart") and p.Anchored and not inTable(p) then
         local isHuge = math.max(p.Size.X, p.Size.Y, p.Size.Z) > 9
@@ -130,6 +159,11 @@ for _, p in ipairs(workspace:GetDescendants()) do
         end
     end
 end
+for _, chair in ipairs(allChairs) do
+    if not table.find(chair.parts, chair.seat) then
+        table.insert(chair.parts, chair.seat)
+    end
+end
 
 ----------------------------------------------------------------
 -- Raise the tables
@@ -144,7 +178,7 @@ for _, t in ipairs(tables) do
 end
 
 ----------------------------------------------------------------
--- Work out each chair's size and which way it faces now
+-- Each chair's size and which way it faces
 ----------------------------------------------------------------
 for _, chair in ipairs(allChairs) do
     local seatPos = chair.start
@@ -158,7 +192,6 @@ for _, chair in ipairs(allChairs) do
         end
     end
     chair.radius = math.min(radius, 2.6)
-    -- The chair faces away from its back
     local forward
     if backCount > 0 then
         forward = flat(seatPos - backSum / backCount)
@@ -170,7 +203,42 @@ for _, chair in ipairs(allChairs) do
 end
 
 ----------------------------------------------------------------
--- Add extra chairs (copies of the ones already there) until each table has enough
+-- Too many chairs? Hide the extras for good.
+----------------------------------------------------------------
+for _, t in ipairs(tables) do
+    local center = flat(t.cf.Position)
+    local avg = V(0, 0, 0)
+    for _, chair in ipairs(t.chairs) do
+        avg += flat(chair.start) - center
+    end
+    local toPlayers = avg.Magnitude > 0.01 and avg.Unit or V(0, 0, 1)
+    t.toPlayers = toPlayers
+    local right = toPlayers:Cross(UP)
+    table.sort(t.chairs, function(a, b)
+        return (flat(a.start) - center):Dot(right) < (flat(b.start) - center):Dot(right)
+    end)
+    if #t.chairs > SEATS_PER_TABLE then
+        local keep = {}
+        for i = 1, SEATS_PER_TABLE do
+            local index = math.floor(1 + (i - 1) * (#t.chairs - 1) / math.max(1, SEATS_PER_TABLE - 1) + 0.5)
+            keep[t.chairs[index]] = true
+        end
+        local kept = {}
+        for _, chair in ipairs(t.chairs) do
+            if keep[chair] then
+                table.insert(kept, chair)
+            else
+                showChair(chair, false)
+                chair.seat.Disabled = true
+                table.insert(t.spare, chair)
+            end
+        end
+        t.chairs = kept
+    end
+end
+
+----------------------------------------------------------------
+-- Not enough chairs? Copy some until each table has enough.
 ----------------------------------------------------------------
 local extraFolder = workspace:FindFirstChild("ExtraBlackjackChairs") or Instance.new("Folder")
 extraFolder.Name = "ExtraBlackjackChairs"
@@ -184,8 +252,6 @@ local function cleanCopy(c)
         end
     end
 end
-
-local added = 0
 for _, t in ipairs(tables) do
     local originals = table.clone(t.chairs)
     local n = 0
@@ -205,24 +271,14 @@ for _, t in ipairs(tables) do
                 copy.seat = c
             end
         end
-        if not copy.seat then
-            local c = original.seat:Clone()
-            cleanCopy(c)
-            c.CFrame = original.seat.CFrame
-            c.Parent = model
-            table.insert(copy.parts, c)
-            copy.seat = c
-        end
-        copy.seat.Disabled = false
         table.insert(t.chairs, copy)
-        table.insert(allChairs, copy)
-        added += 1
     end
 end
 
 ----------------------------------------------------------------
 -- Place the chairs in a curve around each table
 ----------------------------------------------------------------
+local placed = {}
 for _, t in ipairs(tables) do
     local chairs = t.chairs
     if #chairs > 0 then
@@ -232,22 +288,11 @@ for _, t in ipairs(tables) do
         tableOnly.FilterDescendantsInstances = { t.model }
         local top = workspace:Raycast(t.cf.Position + V(0, t.size.Y / 2 + 5, 0), V(0, -(t.size.Y + 10), 0), tableOnly)
         local feltY = top and top.Position.Y or (t.cf.Position.Y + t.size.Y / 2)
+        t.feltY = feltY
         local reach = math.max(t.size.X, t.size.Z) / 2 + 10
-
-        -- The players' side is where the chairs are now
-        local avg = V(0, 0, 0)
-        for _, chair in ipairs(chairs) do
-            avg += flat(chair.start) - center
-        end
-        local toPlayers = avg.Magnitude > 0.01 and avg.Unit or V(0, 0, 1)
+        local toPlayers = t.toPlayers
         local right = toPlayers:Cross(UP)
 
-        -- Keep the same left-to-right order the chairs had before
-        table.sort(chairs, function(a, b)
-            return (flat(a.start) - center):Dot(right) < (flat(b.start) - center):Dot(right)
-        end)
-
-        -- Where the table edge is in a given direction
         local function edgeAt(dir)
             local from = V(center.X, feltY - 0.4, center.Z) + dir * reach
             local hit = workspace:Raycast(from, -dir * reach * 2, tableOnly)
@@ -268,24 +313,20 @@ for _, t in ipairs(tables) do
             chair.center = center
             chair.toPlayers = toPlayers
             chair.minFromTable = flat(edge - center).Magnitude + 1
-            chair.facing = -dir
             chair.extraTurn = math.rad(rng:NextNumber(-MAX_TURN, MAX_TURN))
             chair.tiltX = math.rad(rng:NextNumber(-MAX_TILT, MAX_TILT))
             chair.tiltZ = math.rad(rng:NextNumber(-MAX_TILT, MAX_TILT))
+            table.insert(placed, chair)
         end
     end
 end
 
-----------------------------------------------------------------
--- Slide chairs apart until none of them overlap
-----------------------------------------------------------------
-local settled = false
 for _ = 1, 80 do
     local anyOverlap = false
-    for a = 1, #allChairs do
-        for b = a + 1, #allChairs do
-            local A, B = allChairs[a], allChairs[b]
-            if A.table == B.table and A.pos and B.pos then
+    for a = 1, #placed do
+        for b = a + 1, #placed do
+            local A, B = placed[a], placed[b]
+            if A.table == B.table then
                 local between = B.pos - A.pos
                 local distance = between.Magnitude
                 local needed = A.radius + B.radius + GAP
@@ -299,68 +340,212 @@ for _ = 1, 80 do
             end
         end
     end
-    for _, chair in ipairs(allChairs) do
-        if chair.pos then
-            local fromTable = chair.pos - chair.center
-            if fromTable.Magnitude < chair.minFromTable then
-                chair.pos = chair.center + fromTable.Unit * chair.minFromTable
-            end
-            -- ...or around to the dealer's side
-            local side = (chair.pos - chair.center):Dot(chair.toPlayers)
-            if side < PLAYER_SIDE then
-                chair.pos += chair.toPlayers * (PLAYER_SIDE - side)
-            end
+    for _, chair in ipairs(placed) do
+        local fromTable = chair.pos - chair.center
+        if fromTable.Magnitude < chair.minFromTable then
+            chair.pos = chair.center + fromTable.Unit * chair.minFromTable
+        end
+        -- ...or around to the dealer's side
+        local side = (chair.pos - chair.center):Dot(chair.toPlayers)
+        if side < PLAYER_SIDE then
+            chair.pos += chair.toPlayers * (PLAYER_SIDE - side)
         end
     end
     if not anyOverlap then
-        settled = true
         break
     end
 end
 
-----------------------------------------------------------------
--- Move every chair to its new spot, turned to face the table
-----------------------------------------------------------------
-local moved = 0
-for _, chair in ipairs(allChairs) do
-    if chair.pos then
-        local seatPos = chair.start
-        local facing = flat(chair.center - chair.pos).Unit
-        local turn = math.atan2(chair.forward:Cross(facing).Y, chair.forward:Dot(facing)) + chair.extraTurn
-        local target = V(chair.pos.X, seatPos.Y - CHAIR_DROP, chair.pos.Z)
-        local move = CFrame.new(target)
-            * CFrame.Angles(chair.tiltX, 0, chair.tiltZ)
-            * CFrame.Angles(0, turn, 0)
-            * CFrame.new(-seatPos)
-        for _, p in ipairs(chair.parts) do
-            p.CFrame = move * p.CFrame
-        end
-        moved += 1
+for _, chair in ipairs(placed) do
+    local seatPos = chair.start
+    local facing = flat(chair.center - chair.pos).Unit
+    local turn = math.atan2(chair.forward:Cross(facing).Y, chair.forward:Dot(facing)) + chair.extraTurn
+    local target = V(chair.pos.X, seatPos.Y - CHAIR_DROP, chair.pos.Z)
+    local move = CFrame.new(target)
+        * CFrame.Angles(chair.tiltX, 0, chair.tiltZ)
+        * CFrame.Angles(0, turn, 0)
+        * CFrame.new(-seatPos)
+    for _, p in ipairs(chair.parts) do
+        p.CFrame = move * p.CFrame
     end
 end
 
 ----------------------------------------------------------------
--- Click (or tap) a chair to sit in it - replaces the "Sit & Play" button
--- (the seat pad is invisible, so the cushion on top of it is clickable too)
+-- LOBBY: pick Solo or Multiplayer before playing
 ----------------------------------------------------------------
-if REMOVE_SIT_PROMPT then
-    for _, chair in ipairs(allChairs) do
-        local seat = chair.seat
-        local function sitDown(plr)
-            local humanoid = plr.Character and plr.Character:FindFirstChildOfClass("Humanoid")
-            if humanoid and humanoid.Health > 0 and not seat.Occupant and not humanoid.SeatPart then
-                seat:Sit(humanoid)
-            end
-        end
-        for _, p in ipairs(chair.parts) do
-            if p == seat or p.Name == "Cushion" then
-                local click = Instance.new("ClickDetector")
-                click.MaxActivationDistance = CLICK_DISTANCE
-                click.Parent = p
-                click.MouseClick:Connect(sitDown)
+local function occupant(chair)
+    local o = chair.seat.Occupant
+    return o and Players:GetPlayerFromCharacter(o.Parent)
+end
+
+-- Pick chairs spread out evenly (1 chair = the middle one, facing the dealer)
+local function pickSeats(t, count)
+    local total = #t.chairs
+    count = math.clamp(count, 1, total)
+    local picked = {}
+    if count == 1 then
+        table.insert(picked, t.chairs[math.ceil(total / 2)])
+    else
+        for i = 1, count do
+            local index = math.floor(1 + (i - 1) * (total - 1) / (count - 1) + 0.5)
+            if not table.find(picked, t.chairs[index]) then
+                table.insert(picked, t.chairs[index])
             end
         end
     end
+    return picked
 end
 
-print("[Blackjack] " .. #tables .. " table(s): added " .. added .. " chair(s), " .. moved .. " seats total" .. (settled and "" or " (some chairs may still touch)"))
+local function updatePrompt(t)
+    local prompt = t.prompt
+    if t.mode == "idle" then
+        prompt.Enabled = true
+        prompt.ActionText = "Play Blackjack"
+        prompt.ObjectText = "Solo or Multiplayer"
+    elseif t.mode == "solo" then
+        prompt.Enabled = false
+    else
+        local used = 0
+        for _, chair in ipairs(t.active) do
+            if occupant(chair) then
+                used += 1
+            end
+        end
+        prompt.Enabled = used < #t.active
+        prompt.ActionText = "Join Game"
+        prompt.ObjectText = "Blackjack  " .. used .. "/" .. #t.active .. " players"
+    end
+end
+
+-- Show only these chairs; the rest are hidden and locked
+local function showOnly(t, chosen, seatsOpen)
+    for _, chair in ipairs(t.chairs) do
+        local shown = table.find(chosen, chair) ~= nil
+        showChair(chair, shown)
+        chair.seat.Disabled = not (shown and seatsOpen)
+    end
+end
+
+local function resetTable(t)
+    t.mode = "idle"
+    t.active = {}
+    showOnly(t, pickSeats(t, IDLE_CHAIRS), false) -- use the menu to start
+    updatePrompt(t)
+end
+
+local function seatIn(player, chairs)
+    local character = player.Character
+    local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+    local root = character and character:FindFirstChild("HumanoidRootPart")
+    if not humanoid or not root or humanoid.Health <= 0 or humanoid.SeatPart then
+        return false
+    end
+    local best, bestDistance
+    for _, chair in ipairs(chairs) do
+        if not chair.seat.Occupant and not chair.seat.Disabled then
+            local d = (chair.seat.Position - root.Position).Magnitude
+            if not bestDistance or d < bestDistance then
+                best, bestDistance = chair, d
+            end
+        end
+    end
+    if best then
+        best.seat:Sit(humanoid)
+        return true
+    end
+    return false
+end
+
+local function startTable(t, player, count)
+    count = math.clamp(math.floor(count), 1, #t.chairs)
+    t.mode = count == 1 and "solo" or "multi"
+    t.active = pickSeats(t, count)
+    t.lastUsed = os.clock()
+    showOnly(t, t.active, true)
+    seatIn(player, t.active)
+    updatePrompt(t)
+end
+
+local function closeTo(player, t, range)
+    local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    return root and flat(root.Position - t.cf.Position).Magnitude < range
+end
+
+for _, t in ipairs(tables) do
+    if #t.chairs > 0 then
+        local anchor = Instance.new("Part")
+        anchor.Name = "BlackjackLobbyAnchor"
+        anchor.Anchored = true
+        anchor.CanCollide = false
+        anchor.CanQuery = false
+        anchor.CanTouch = false
+        anchor.Transparency = 1
+        anchor.Size = V(1, 1, 1)
+        anchor.CFrame = CFrame.new(V(t.cf.Position.X, (t.feltY or t.cf.Position.Y) + 1.5, t.cf.Position.Z))
+        anchor.Parent = extraFolder
+        local prompt = Instance.new("ProximityPrompt")
+        prompt.Name = "BlackjackLobbyPrompt"
+        prompt.KeyboardKeyCode = Enum.KeyCode.E
+        prompt.HoldDuration = 0
+        prompt.MaxActivationDistance = 14
+        prompt.RequiresLineOfSight = false
+        prompt:SetAttribute("TableId", t.id)
+        prompt.Parent = anchor
+        t.prompt = prompt
+        prompt.Triggered:Connect(function(player)
+            if t.mode == "idle" then
+                lobbyRemote:FireClient(player, "openMenu", { tableId = t.id, maxSeats = #t.chairs })
+            elseif t.mode == "multi" then
+                if not seatIn(player, t.active) then
+                    lobbyRemote:FireClient(player, "message", { text = "This table is full" })
+                end
+            end
+        end)
+        resetTable(t)
+    end
+end
+
+lobbyRemote.OnServerEvent:Connect(function(player, kind, tableId, count)
+    -- count ~= count catches NaN sent by an exploiter
+    if kind ~= "choose" or typeof(tableId) ~= "number" or typeof(count) ~= "number" or count ~= count then
+        return
+    end
+    local t = tables[tableId]
+    if not t or not t.prompt or not closeTo(player, t, 25) then
+        return
+    end
+    if t.mode == "idle" then
+        startTable(t, player, count)
+    elseif t.mode == "multi" then
+        if not seatIn(player, t.active) then
+            lobbyRemote:FireClient(player, "message", { text = "This table is full" })
+        end
+    else
+        lobbyRemote:FireClient(player, "message", { text = "Someone is already playing here" })
+    end
+end)
+
+-- Reset tables that nobody is sitting at anymore
+task.spawn(function()
+    while true do
+        task.wait(0.5)
+        for _, t in ipairs(tables) do
+            if t.prompt and t.mode ~= "idle" then
+                local anyone = false
+                for _, chair in ipairs(t.active) do
+                    if occupant(chair) then
+                        anyone = true
+                    end
+                end
+                if anyone then
+                    t.lastUsed = os.clock()
+                elseif os.clock() - t.lastUsed > EMPTY_RESET_TIME then
+                    resetTable(t)
+                end
+                updatePrompt(t)
+            end
+        end
+    end
+end)
+
+print("[Blackjack] Lobby ready at " .. #tables .. " table(s)")
