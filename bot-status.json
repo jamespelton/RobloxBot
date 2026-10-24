@@ -1,12 +1,12 @@
 {
   "bot": "Rex (Roblox)",
-  "last_updated": "2026-10-21T00:00:00-05:00",
-  "updated_at": "2026-10-21T00:00:00-05:00",
+  "last_updated": "2026-10-23T23:59:00-05:00",
+  "updated_at": "2026-10-23T23:59:00-05:00",
   "status": "healthy",
-  "summary": "Blackjack: James's on-screen HUD v3 (cards on screen, chip bets, guide) + server hands feed",
+  "summary": "Blackjack v7: Solo/Multiplayer lobby, 8 chairs per table, seats locked until chosen",
   "urgent": [],
   "needs_james": [
-    "PLAYTEST blackjack (2 players if possible): walk up to a chair -> 'Sit & Play' prompt; sit -> guide opens; tap chips + DEAL; your cards show in YOUR HAND at the bottom, dealer's at the top, other players on the right. Camera swings per turn, characters near the table fade. H = guide, C = camera, LEAVE TABLE stands you up.",
+    "PLAYTEST blackjack lobby: walk to a table -> E Play Blackjack -> pick Solo or Multiplayer (2-8) -> Start seats you; only that many chairs show and the rest cannot be sat in. A 2nd player gets E Join Game. Table resets 4s after everyone leaves.",
     "PLAYTEST. Nothing this session was verified in-game - playtest log capture still returns nothing and screenshots come back black, so everything was verified by querying coordinates instead. Specifically worth watching: whether loading actually feels faster now StreamingEnabled is on, whether city traffic and pedestrians animate, and whether the roulette wheel still visibly spins when you bet.",
     "Lighting.Technology is not readable from the plugin sandbox. If it is set to Future, switch it to ShadowMap in the Properties panel - likely the single biggest remaining FPS win.",
     "StreamingMinRadius / StreamingTargetRadius are not scriptable in this Studio build. They are on Roblox defaults; tune them in the Workspace Properties panel if streaming pops in too late.",
@@ -52,5 +52,5 @@
     "Bash heredocs in this environment choke on large Lua payloads (apostrophes break the quoting). Use the Write tool for whole files and Python inline for surgical patches.",
     "Two pre-existing modelling bugs found and reported: poker and roulette chair backs were on the table side, so those chairs already faced away from their own table; and four WallSign neons were stacked back-to-front behind the wall."
   ],
-  "next_run_needed": "2026-10-22"
+  "next_run_needed": "2026-10-24"
 }
