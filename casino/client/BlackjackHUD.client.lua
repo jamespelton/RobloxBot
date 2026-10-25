@@ -1,7 +1,7 @@
--- BLACKJACK SCREEN + CAMERA + TUTORIAL v2 (LocalScript in StarterPlayer > StarterPlayerScripts)
+-- BLACKJACK SCREEN + CAMERA + TUTORIAL v3 (LocalScript in StarterPlayer > StarterPlayerScripts)
 -- Casino changes: tutorial line breaks use NL (the Studio bridge mangles backslash-n),
--- and the round chip buttons set their existing UICorner instead of adding a second.
--- (Sit & Play prompts are removed by BlackjackTableAdjust - you click a chair to sit.)
+-- the round chip buttons set their existing UICorner instead of adding a second,
+-- and the CHIPS panel is hidden (chips are shown by the casino HUD).
 local MIN_BET, MAX_BET = 10, 500
 local DEFAULT_BET = 50
 local CHIP_VALUES = { 10, 25, 50, 100, 250 }
@@ -140,7 +140,19 @@ end
 
 local betMode = new("Frame", { Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1 }, controls)
 row(betMode, 8)
-local betAmount = infoBlock(betMode, "YOUR BET")
+
+-- YOUR BET: a box you can type in
+local betBlock = new("Frame", { Size = UDim2.fromOffset(100, 52), BackgroundTransparency = 1, LayoutOrder = 0 }, betMode)
+text({ Size = UDim2.new(1, 0, 0, 16), Text = "YOUR BET", TextSize = 11, TextColor3 = MUTED }, betBlock)
+local betBox = new("TextBox", {
+    Position = UDim2.fromOffset(6, 19), Size = UDim2.new(1, -12, 0, 30),
+    BackgroundColor3 = Color3.fromRGB(8, 8, 10), BackgroundTransparency = 0.2, BorderSizePixel = 0,
+    Font = Enum.Font.GothamBold, TextSize = 20, TextColor3 = GOLD, Text = "",
+    PlaceholderText = "Type", PlaceholderColor3 = MUTED, ClearTextOnFocus = true, TextEditable = true,
+}, betBlock)
+rounded(betBox, 6)
+outline(betBox, GOLD, 0.35)
+
 local chipColors = {
     Color3.fromRGB(40, 70, 150), Color3.fromRGB(35, 110, 70), Color3.fromRGB(150, 40, 45),
     Color3.fromRGB(30, 30, 34), Color3.fromRGB(100, 55, 130),
@@ -287,7 +299,7 @@ local PAGES = {
     {
         title = "PLACING A BET",
         cards = { "10", "25", "50", "→", "PLACE BET" },
-        text = "When the round opens, tap the " .. Y .. "chip buttons" .. E .. " at the bottom to set your bet, then press " .. Y .. "Place Bet" .. E .. " before the timer runs out.",
+        text = "Tap the " .. Y .. "chip buttons" .. E .. " or " .. Y .. "type your bet" .. E .. " in the box, then press " .. Y .. "Place Bet" .. E .. " before the timer runs out.",
     },
     {
         title = "YOUR CHOICES",
@@ -384,7 +396,9 @@ local function myChips()
     return c and c.Value or 0
 end
 local function refreshBet()
-    betAmount.Text = commas(bet)
+    if not betBox:IsFocused() then
+        betBox.Text = bet > 0 and tostring(bet) or ""
+    end
     local ok = bet >= MIN_BET
     placeButton.AutoButtonColor = ok
     placeButton.BackgroundColor3 = ok and GOLD or Color3.fromRGB(70, 66, 58)
@@ -394,6 +408,42 @@ local function setMode(mode)
     betMode.Visible = mode == "bet"
     actionMode.Visible = mode == "action"
 end
+local function placeBet()
+    if bet < MIN_BET or betPlaced then
+        if bet < MIN_BET then
+            statusText.Text = "Minimum bet is " .. MIN_BET
+        end
+        return
+    end
+    remote:FireServer("bet", bet)
+    lastBet = bet
+    betPlaced = true
+    statusText.Text = "Bet placed  ·  " .. commas(bet) .. " chips"
+    setMode("none")
+end
+
+-- Typing in the bet box
+betBox:GetPropertyChangedSignal("Text"):Connect(function()
+    local digits = betBox.Text:gsub("%D", "")
+    if digits ~= betBox.Text then
+        betBox.Text = digits -- numbers only
+    end
+end)
+betBox.FocusLost:Connect(function(enterPressed)
+    local typed = tonumber(betBox.Text)
+    if typed then
+        local most = math.min(MAX_BET, myChips())
+        if typed > most then
+            statusText.Text = typed > MAX_BET and ("Max bet is " .. MAX_BET) or "You don't have that many chips"
+        end
+        bet = math.clamp(math.floor(typed), 0, most)
+    end
+    refreshBet()
+    if enterPressed then
+        placeBet()
+    end
+end)
+
 for _, chip in ipairs(chipButtons) do
     chip.button.MouseButton1Click:Connect(function()
         if betPlaced then
@@ -407,16 +457,7 @@ clearButton.MouseButton1Click:Connect(function()
     bet = 0
     refreshBet()
 end)
-placeButton.MouseButton1Click:Connect(function()
-    if bet < MIN_BET or betPlaced then
-        return
-    end
-    remote:FireServer("bet", bet)
-    lastBet = bet
-    betPlaced = true
-    statusText.Text = "Bet placed  ·  " .. commas(bet) .. " chips"
-    setMode("none")
-end)
+placeButton.MouseButton1Click:Connect(placeBet)
 hitButton.MouseButton1Click:Connect(function()
     remote:FireServer("action", "hit")
 end)
@@ -542,7 +583,7 @@ local function seatView(seatPos)
     if dealerSpot then
         target = dealerSpot + UP * 2
     else
-        target = tableCenter - outward * 4 + UP * 1.5 -- best guess until the dealer has had a turn
+        target = tableCenter - outward * 4 + UP * 1.5
     end
     return eye, target
 end
@@ -666,9 +707,9 @@ remote.OnClientEvent:Connect(function(kind, data)
             statusText.Text = "Dealer's turn"
             setMode("none")
             if data.focus then
-                dealerSpot = data.focus -- remember where the dealer is for the player views
+                dealerSpot = data.focus
             end
-            if tableCenter then
+            if tableCenter and data.eye and data.look then
                 shoot("dealer", data.eye, data.look)
             end
         end
