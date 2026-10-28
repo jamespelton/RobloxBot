@@ -1,18 +1,11 @@
 {
   "bot": "Rex (Roblox)",
-  "last_updated": "2026-10-23T23:59:00-05:00",
-  "updated_at": "2026-10-23T23:59:00-05:00",
-  "status": "healthy",
-  "summary": "Blackjack v7: Solo/Multiplayer lobby, 8 chairs per table, seats locked until chosen",
+  "last_updated": "2026-10-28T16:31:39-05:00",
+  "updated_at": "2026-10-28T16:31:39-05:00",
+  "status": "parked",
+  "summary": "PARKED by James, quarterly review 10/28. Playtest asks kept in parked_needs_james.",
   "urgent": [],
-  "needs_james": [
-    "PLAYTEST blackjack lobby: walk to a table -> E Play Blackjack -> pick Solo or Multiplayer (2-8) -> Start seats you; only that many chairs show and the rest cannot be sat in. A 2nd player gets E Join Game. Table resets 4s after everyone leaves.",
-    "PLAYTEST. Nothing this session was verified in-game - playtest log capture still returns nothing and screenshots come back black, so everything was verified by querying coordinates instead. Specifically worth watching: whether loading actually feels faster now StreamingEnabled is on, whether city traffic and pedestrians animate, and whether the roulette wheel still visibly spins when you bet.",
-    "Lighting.Technology is not readable from the plugin sandbox. If it is set to Future, switch it to ShadowMap in the Properties panel - likely the single biggest remaining FPS win.",
-    "StreamingMinRadius / StreamingTargetRadius are not scriptable in this Studio build. They are on Roblox defaults; tune them in the Workspace Properties panel if streaming pops in too late.",
-    "The car-arrival intro is still disabled. Its arrival point (24, -142) is now underneath the GrandExterior canopy column and needs re-siting before it can be switched back on.",
-    "Poker and craps tables are still decoration only; say the word and Rex will wire them up."
-  ],
+  "needs_james": [],
   "needs_james_carried_over": {
     "note": "Open items from earlier sessions on other games. Clear them if already done.",
     "items": [
@@ -52,5 +45,13 @@
     "Bash heredocs in this environment choke on large Lua payloads (apostrophes break the quoting). Use the Write tool for whole files and Python inline for surgical patches.",
     "Two pre-existing modelling bugs found and reported: poker and roulette chair backs were on the table side, so those chairs already faced away from their own table; and four WallSign neons were stacked back-to-front behind the wall."
   ],
-  "next_run_needed": "2026-10-24"
+  "next_run_needed": "2026-10-24",
+  "parked_needs_james": [
+    "PLAYTEST blackjack lobby: walk to a table -> E Play Blackjack -> pick Solo or Multiplayer (2-8) -> Start seats you; only that many chairs show and the rest cannot be sat in. A 2nd player gets E Join Game. Table resets 4s after everyone leaves.",
+    "PLAYTEST. Nothing this session was verified in-game - playtest log capture still returns nothing and screenshots come back black, so everything was verified by querying coordinates instead. Specifically worth watching: whether loading actually feels faster now StreamingEnabled is on, whether city traffic and pedestrians animate, and whether the roulette wheel still visibly spins when you bet.",
+    "Lighting.Technology is not readable from the plugin sandbox. If it is set to Future, switch it to ShadowMap in the Properties panel - likely the single biggest remaining FPS win.",
+    "StreamingMinRadius / StreamingTargetRadius are not scriptable in this Studio build. They are on Roblox defaults; tune them in the Workspace Properties panel if streaming pops in too late.",
+    "The car-arrival intro is still disabled. Its arrival point (24, -142) is now underneath the GrandExterior canopy column and needs re-siting before it can be switched back on.",
+    "Poker and craps tables are still decoration only; say the word and Rex will wire them up."
+  ]
 }
